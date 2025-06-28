@@ -81,7 +81,7 @@ exports.getUsers = [requireShopLogin, async (req, res) => {
   const User = shopDB.define('User', {}, { tableName: 'Users', timestamps: false });
   await shopDB.sync();
   const users = await User.findAll();
-  res.render('shop/users', { users });
+  res.render('shop/users', { users, slug });
 }];
 
 // Products
@@ -107,6 +107,74 @@ exports.getOrders = [requireShopLogin, async (req, res) => {
 // Reports
 exports.getReports = [requireShopLogin, (req, res) => {
   res.render('shop/reports');
+}];
+
+// Hiển thị form tạo CTV (dùng cho modal)
+exports.createUserPage = [requireShopLogin, async (req, res) => {
+  const slug = req.params.slug;
+  res.render('shop/createUser', { slug });
+}];
+
+// Xử lý tạo CTV mới
+exports.createUser = [requireShopLogin, async (req, res) => {
+  const slug = req.params.slug;
+  const { name, phone, bank_name, bank_number, api_token } = req.body;
+  const shopDB = loadShopDB(slug);
+  // Định nghĩa model User (không có trường username để phân biệt với admin)
+  const User = shopDB.define('User', {
+    name: { type: require('sequelize').STRING },
+    phone: { type: require('sequelize').STRING },
+    bank_name: { type: require('sequelize').STRING },
+    bank_number: { type: require('sequelize').STRING },
+    api_token: { type: require('sequelize').STRING },
+    is_spam: { type: require('sequelize').BOOLEAN, defaultValue: false },
+    username: { type: require('sequelize').STRING }, // để phân biệt admin
+    password: { type: require('sequelize').STRING }
+  }, { tableName: 'Users', timestamps: false });
+  await shopDB.sync();
+  await User.create({ name, phone, bank_name, bank_number, api_token, is_spam: false });
+  res.json({ success: true }); // trả về JSON cho modal xử lý
+}];
+
+// Hiển thị form sửa CTV (dùng cho modal)
+exports.editUserPage = [requireShopLogin, async (req, res) => {
+  const slug = req.params.slug;
+  const id = req.params.id;
+  const shopDB = loadShopDB(slug);
+  const User = shopDB.define('User', {
+    name: { type: require('sequelize').STRING },
+    phone: { type: require('sequelize').STRING },
+    bank_name: { type: require('sequelize').STRING },
+    bank_number: { type: require('sequelize').STRING },
+    api_token: { type: require('sequelize').STRING },
+    is_spam: { type: require('sequelize').BOOLEAN, defaultValue: false },
+    username: { type: require('sequelize').STRING },
+    password: { type: require('sequelize').STRING }
+  }, { tableName: 'Users', timestamps: false });
+  await shopDB.sync();
+  const user = await User.findByPk(id);
+  res.render('shop/editUser', { slug, user });
+}];
+
+// Xử lý cập nhật CTV
+exports.editUser = [requireShopLogin, async (req, res) => {
+  const slug = req.params.slug;
+  const id = req.params.id;
+  const { name, phone, bank_name, bank_number, api_token, is_spam } = req.body;
+  const shopDB = loadShopDB(slug);
+  const User = shopDB.define('User', {
+    name: { type: require('sequelize').STRING },
+    phone: { type: require('sequelize').STRING },
+    bank_name: { type: require('sequelize').STRING },
+    bank_number: { type: require('sequelize').STRING },
+    api_token: { type: require('sequelize').STRING },
+    is_spam: { type: require('sequelize').BOOLEAN, defaultValue: false },
+    username: { type: require('sequelize').STRING },
+    password: { type: require('sequelize').STRING }
+  }, { tableName: 'Users', timestamps: false });
+  await shopDB.sync();
+  await User.update({ name, phone, bank_name, bank_number, api_token, is_spam: !!is_spam }, { where: { id } });
+  res.json({ success: true });
 }];
 
 // Đăng xuất

@@ -5,7 +5,38 @@
 <!-- Nút đổi tài khoản quản trị shop -->
 <a href="/shop/<%= slug %>/change-admin" style="display:inline-block;margin-bottom:12px;background:#007bff;color:#fff;padding:7px 16px;border-radius:6px;text-decoration:none;font-weight:500;">🔑 Đổi tài khoản quản trị Shop</a>
 
-<a href="/shop/<%= slug %>/users/create">➕ Thêm CTV mới</a>
+<button onclick="openCreateUserModal()" style="margin-bottom:12px;background:#28a745;color:#fff;padding:7px 16px;border-radius:6px;border:none;font-weight:500;cursor:pointer;">➕ Thêm CTV mới</button>
+
+<!-- Modal thêm CTV -->
+<div id="createUserModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:28px 22px 18px 22px;min-width:320px;max-width:96vw;box-shadow:0 4px 24px rgba(0,0,0,0.13);position:relative;">
+    <span style="position:absolute;right:16px;top:10px;font-size:1.5em;color:#888;cursor:pointer;" onclick="closeCreateUserModal()">&times;</span>
+    <iframe id="createUserFrame" src="" style="border:none;width:100%;height:340px;"></iframe>
+  </div>
+</div>
+
+<!-- Modal sửa CTV -->
+<div id="editUserModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:28px 22px 18px 22px;min-width:320px;max-width:96vw;box-shadow:0 4px 24px rgba(0,0,0,0.13);position:relative;">
+    <span style="position:absolute;right:16px;top:10px;font-size:1.5em;color:#888;cursor:pointer;" onclick="closeEditUserModal()">&times;</span>
+    <iframe id="editUserFrame" src="" style="border:none;width:100%;height:360px;"></iframe>
+  </div>
+</div>
+
+<style>
+  table {
+    color: #fff;
+    background: rgba(0,0,0,0.13);
+  }
+  table th, table td {
+    color: #fff;
+    background: transparent;
+  }
+  table a {
+    color: #fff;
+    text-decoration: underline;
+  }
+</style>
 
 <table border="1" cellpadding="8" cellspacing="0">
   <thead>
@@ -34,7 +65,7 @@
           <td><%= user.api_token %></td>
           <td><%= user.is_spam ? '🟥 Có' : '🟩 Không' %></td>
           <td>
-            <a href="/shop/<%= slug %>/users/edit/<%= user.id %>">✏️ Sửa</a> |
+            <a href="#" onclick="openEditUserModal('<%= user.id %>');return false;">✏️ Sửa</a> |
             <a href="/shop/<%= slug %>/users/delete/<%= user.id %>" onclick="return confirm('Xoá người dùng này?')">🗑️ Xoá</a>
           </td>
         </tr>
@@ -42,5 +73,29 @@
     <% } %>
   </tbody>
 </table>
+
+<script>
+function openCreateUserModal() {
+  document.getElementById('createUserModal').style.display = 'flex';
+  document.getElementById('createUserFrame').src = '/shop/<%= slug %>/users/create';
+}
+function closeCreateUserModal() {
+  document.getElementById('createUserModal').style.display = 'none';
+  document.getElementById('createUserFrame').src = '';
+}
+function openEditUserModal(id) {
+  document.getElementById('editUserModal').style.display = 'flex';
+  document.getElementById('editUserFrame').src = '/shop/<%= slug %>/users/edit/' + id;
+}
+function closeEditUserModal() {
+  document.getElementById('editUserModal').style.display = 'none';
+  document.getElementById('editUserFrame').src = '';
+}
+// Đóng modal khi click nền tối
+window.onclick = function(event) {
+  if (event.target === document.getElementById('createUserModal')) closeCreateUserModal();
+  if (event.target === document.getElementById('editUserModal')) closeEditUserModal();
+}
+</script>
 
 <%- include('../partials/footer') %>

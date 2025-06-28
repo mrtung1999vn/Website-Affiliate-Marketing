@@ -1,0 +1,53 @@
+<form id="editUserForm" method="POST" action="/shop/<%= slug %>/users/edit/<%= user.id %>" style="max-width:340px;margin:0 auto;">
+  <div style="margin-bottom:14px;">
+    <label for="name" style="display:block;font-weight:500;margin-bottom:4px;">Tên CTV</label>
+    <input id="name" name="name" type="text" required style="width:100%;padding:8px 10px;border-radius:7px;border:1.2px solid #e0e0e0;" value="<%= user.name %>" />
+  </div>
+  <div style="margin-bottom:14px;">
+    <label for="phone" style="display:block;font-weight:500;margin-bottom:4px;">Số điện thoại</label>
+    <input id="phone" name="phone" type="text" required style="width:100%;padding:8px 10px;border-radius:7px;border:1.2px solid #e0e0e0;" value="<%= user.phone %>" />
+  </div>
+  <div style="margin-bottom:14px;">
+    <label for="bank_name" style="display:block;font-weight:500;margin-bottom:4px;">Ngân hàng</label>
+    <input id="bank_name" name="bank_name" type="text" style="width:100%;padding:8px 10px;border-radius:7px;border:1.2px solid #e0e0e0;" value="<%= user.bank_name %>" />
+  </div>
+  <div style="margin-bottom:14px;">
+    <label for="bank_number" style="display:block;font-weight:500;margin-bottom:4px;">Số tài khoản</label>
+    <input id="bank_number" name="bank_number" type="text" style="width:100%;padding:8px 10px;border-radius:7px;border:1.2px solid #e0e0e0;" value="<%= user.bank_number %>" />
+  </div>
+  <div style="margin-bottom:18px;">
+    <label for="api_token" style="display:block;font-weight:500;margin-bottom:4px;">Token API</label>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input id="api_token" name="api_token" type="text" style="flex:1;padding:8px 10px;border-radius:7px;border:1.2px solid #e0e0e0;" value="<%= user.api_token %>" />
+      <button type="button" onclick="generateToken()" style="padding:7px 12px;border-radius:6px;background:#007bff;color:#fff;border:none;font-weight:500;cursor:pointer;">Tạo token</button>
+    </div>
+  </div>
+  <div style="margin-bottom:18px;">
+    <label style="font-weight:500;">
+      <input type="checkbox" name="is_spam" value="1" <%= user.is_spam ? 'checked' : '' %> /> Đánh dấu spam
+    </label>
+  </div>
+  <button type="submit" style="width:100%;padding:11px;background:linear-gradient(90deg,#007bff 60%,#00c6ff 100%);color:#fff;border:none;border-radius:8px;font-size:1.1em;font-weight:bold;cursor:pointer;">Lưu thay đổi</button>
+</form>
+<script>
+function generateToken() {
+  // Tạo token ngẫu nhiên 32 ký tự
+  const token = Array.from({length:32},()=>Math.floor(Math.random()*36).toString(36)).join('');
+  document.getElementById('api_token').value = token;
+}
+const form = document.getElementById('editUserForm');
+form.onsubmit = async function(e) {
+  e.preventDefault();
+  const formData = new FormData(form);
+  const res = await fetch(form.action, {
+    method: 'POST',
+    body: formData
+  });
+  const data = await res.json();
+  if (data.success) {
+    window.parent.location.reload();
+  } else {
+    alert('Có lỗi khi cập nhật CTV!');
+  }
+}
+</script>
