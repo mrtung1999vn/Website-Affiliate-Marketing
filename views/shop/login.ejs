@@ -112,12 +112,25 @@
 <div class="login-bg-tech">
   <div class="login-container">
     <div class="login-tech-img">
-      <img src="/images/logo.png" alt="Shop Tech" />
+      <% if (shop && shop.logo) { %>
+        <img src="/uploads/<%= shop.logo %>" alt="Logo shop" />
+      <% } else { %>
+        <img src="/images/logo.png" alt="Shop Tech" />
+      <% } %>
     </div>
     <div class="login-title">Đăng nhập Shop</div>
     <form class="login-form" method="POST" action="/shop/<%= slug %>/login">
       <input type="text" name="username" placeholder="Tên đăng nhập" required />
       <input type="password" name="password" placeholder="Mật khẩu" required />
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div style="color: #e74c3c; text-align:center; margin-bottom:10px; font-size:1em; font-weight:500;">
+          <%= error %>
+        </div>
+      <% } else if (typeof success !== 'undefined' && success) { %>
+        <div style="color: #27ae60; text-align:center; margin-bottom:10px; font-size:1em; font-weight:500;">
+          <%= success %>
+        </div>
+      <% } %>
       <button type="submit">Đăng nhập</button>
     </form>
   </div>

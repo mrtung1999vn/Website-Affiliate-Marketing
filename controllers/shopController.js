@@ -1,10 +1,17 @@
 // controllers/shopController.js
 const { loadShopDB } = require('../models');
+const { Shop } = require('../models/models-main');
+
+// Middleware kiểm tra đăng nhập shop
+function requireShopLogin(req, res, next) {
+  if (req.session && req.session.shopUser && req.session.shopSlug === req.params.slug) {
+    return next();
+  }
+  res.redirect(`/shop/${req.params.slug}/login`);
+}
 
 exports.loginPage = async (req, res) => {
   const slug = req.params.slug;
-  // Lấy thông tin shop theo slug
-  const { Shop } = require('../models/models-main');
   let shop = null;
   if (slug) {
     shop = await Shop.findOne({ where: { slug } });
@@ -12,11 +19,33 @@ exports.loginPage = async (req, res) => {
   res.render('shop/login', { slug, shop });
 };
 
-exports.dashboard = async (req, res) => {
+// Xử lý POST login
+exports.login = async (req, res) => {
+  const slug = req.params.slug;
+  const { username, password } = req.body;
+  const shopDB = loadShopDB(slug);
+  // Định nghĩa model User
+  const User = shopDB.define('User', {
+    username: { type: require('sequelize').STRING },
+    password: { type: require('sequelize').STRING }
+  }, { tableName: 'Users', timestamps: false });
+  await shopDB.sync();
+  const user = await User.findOne({ where: { username, password } });
+  if (user) {
+    req.session.shopUser = user;
+    req.session.shopSlug = slug;
+    res.redirect(`/shop/${slug}/dashboard`);
+  } else {
+    let shop = await Shop.findOne({ where: { slug } });
+    res.render('shop/login', { slug, shop, error: 'Sai tài khoản hoặc mật khẩu!' });
+  }
+};
+
+// Dashboard shop (bảo vệ đăng nhập)
+exports.dashboard = [requireShopLogin, async (req, res) => {
   try {
     const slug = req.params.slug;
     const shopDB = loadShopDB(slug);
-    // Định nghĩa models tạm thời cho từng shop
     const User = shopDB.define('User', {}, { tableName: 'Users', timestamps: false });
     const Product = shopDB.define('Product', {}, { tableName: 'Products', timestamps: false });
     const Order = shopDB.define('Order', {}, { tableName: 'Orders', timestamps: false });
@@ -24,7 +53,6 @@ exports.dashboard = async (req, res) => {
     const totalUsers = await User.count().catch(() => 0);
     const totalProducts = await Product.count().catch(() => 0);
     const totalOrders = await Order.count().catch(() => 0);
-    // Doanh thu: giả sử có cột 'total' trong bảng Orders
     let totalRevenue = 0;
     try {
       const orders = await Order.findAll({ attributes: ['total'] });
@@ -44,20 +72,46 @@ exports.dashboard = async (req, res) => {
       totalRevenue: 0
     });
   }
-};
+}];
 
-exports.getUsers = (req, res) => {
-  res.render('shop/users', { users: [] });
-};
+// Users
+exports.getUsers = [requireShopLogin, async (req, res) => {
+  const slug = req.params.slug;
+  const shopDB = loadShopDB(slug);
+  const User = shopDB.define('User', {}, { tableName: 'Users', timestamps: false });
+  await shopDB.sync();
+  const users = await User.findAll();
+  res.render('shop/users', { users });
+}];
 
-exports.getProducts = (req, res) => {
-  res.render('shop/products', { products: [] });
-};
+// Products
+exports.getProducts = [requireShopLogin, async (req, res) => {
+  const slug = req.params.slug;
+  const shopDB = loadShopDB(slug);
+  const Product = shopDB.define('Product', {}, { tableName: 'Products', timestamps: false });
+  await shopDB.sync();
+  const products = await Product.findAll();
+  res.render('shop/products', { products });
+}];
 
-exports.getOrders = (req, res) => {
-  res.render('shop/orders', { orders: [] });
-};
+// Orders
+exports.getOrders = [requireShopLogin, async (req, res) => {
+  const slug = req.params.slug;
+  const shopDB = loadShopDB(slug);
+  const Order = shopDB.define('Order', {}, { tableName: 'Orders', timestamps: false });
+  await shopDB.sync();
+  const orders = await Order.findAll();
+  res.render('shop/orders', { orders });
+}];
 
-exports.getReports = (req, res) => {
+// Reports
+exports.getReports = [requireShopLogin, (req, res) => {
   res.render('shop/reports');
+}];
+
+// Đăng xuất
+exports.logout = (req, res) => {
+  req.session.destroy(() => {
+    res.redirect(`/shop/${req.params.slug}/login`);
+  });
 };

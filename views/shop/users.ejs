@@ -2,6 +2,9 @@
 
 <h2>👥 Quản lý Cộng Tác Viên</h2>
 
+<!-- Nút đổi tài khoản quản trị shop -->
+<a href="/shop/<%= slug %>/change-admin" style="display:inline-block;margin-bottom:12px;background:#007bff;color:#fff;padding:7px 16px;border-radius:6px;text-decoration:none;font-weight:500;">🔑 Đổi tài khoản quản trị Shop</a>
+
 <a href="/shop/<%= slug %>/users/create">➕ Thêm CTV mới</a>
 
 <table border="1" cellpadding="8" cellspacing="0">
@@ -21,7 +24,7 @@
     <% if (users.length === 0) { %>
       <tr><td colspan="8">Chưa có cộng tác viên nào.</td></tr>
     <% } else { %>
-      <% users.forEach((user, i) => { %>
+      <% users.filter(user => !user.username).forEach((user, i) => { %>
         <tr>
           <td><%= i + 1 %></td>
           <td><%= user.name %></td>

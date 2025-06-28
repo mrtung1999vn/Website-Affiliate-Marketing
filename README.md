@@ -93,3 +93,55 @@ Mỗi shop là một hệ thống riêng biệt:
 git clone https://github.com/mrtung1999vn/Website-Affiliate-Marketing
 cd affiliate-marketing-system
 npm install
+```
+
+### 2. Chạy thử
+```bash
+npm start
+```
+
+Mở trình duyệt và truy cập `http://localhost:3000` để xem ứng dụng.
+
+---
+
+## 🛠️ Scripts & Công cụ sửa lỗi
+
+- **fix/migrate-shop-dbs.js**: Script tự động migrate các file shop_*.sqlite để đảm bảo bảng Users trong từng database shop có đủ cột username/password (dùng cho các shop tạo trước khi nâng cấp hệ thống). Chạy bằng lệnh:
+
+  ```powershell
+  node fix/migrate-shop-dbs.js
+  ```
+  
+  Script sẽ báo cáo trạng thái migrate từng file. Nếu có lỗi (ví dụ thiếu bảng Users), bạn cần kiểm tra lại database shop tương ứng.
+
+- **fix/show-structure.js**: Script hiển thị cấu trúc bảng của tất cả các file shop_*.sqlite. Chạy bằng lệnh:
+
+  ```powershell
+  node fix/show-structure.js
+  ```
+  
+  Script sẽ in ra cấu trúc bảng (tên bảng, tên cột, kiểu dữ liệu) của từng file shop_*.sqlite.
+
+- **fix/truncate-all-tables.js**: Script xóa sạch dữ liệu các bảng trong tất cả file shop_*.sqlite (không xóa cấu trúc bảng). Chạy bằng lệnh:
+
+  ```powershell
+  node fix/truncate-all-tables.js
+  ```
+  
+  Script sẽ xóa toàn bộ dữ liệu trong các bảng của từng file shop_*.sqlite, giữ nguyên cấu trúc bảng.
+
+- **fix/reset-main-db.js**: Xóa file main.sqlite (database chính) và hướng dẫn tạo lại cấu trúc bảng Shops. Chạy bằng lệnh:
+
+  ```powershell
+  node fix/reset-main-db.js
+  ```
+  
+  Sau đó khởi động lại server Node.js để Sequelize tự tạo lại bảng với cấu trúc mới nhất.
+
+- **fix/reset-db.js**: Xóa toàn bộ file shop_*.sqlite và main.sqlite (reset trắng toàn bộ hệ thống). Chạy bằng lệnh:
+
+  ```powershell
+  node fix/reset-db.js
+  ```
+  
+  Sau đó khởi động lại server Node.js để tạo lại database mới hoàn toàn.

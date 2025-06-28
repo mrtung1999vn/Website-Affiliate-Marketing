@@ -78,6 +78,19 @@ exports.createShop = [
         logo: logoPath,
         dbFile: ''
       });
+      // Tạo user admin cho shop (DB riêng)
+      const { loadShopDB } = require('../models');
+      const shopDB = loadShopDB(req.body.slug);
+      const { Sequelize, DataTypes } = require('sequelize');
+      const User = shopDB.define('User', {
+        username: DataTypes.STRING,
+        password: DataTypes.STRING
+      }, { tableName: 'Users', timestamps: false });
+      await shopDB.sync();
+      await User.create({
+        username: req.body.adminUsername,
+        password: req.body.adminPassword
+      });
       const shops = await Shop.findAll({ order: [['id', 'DESC']] });
       res.render('admin/createShop', { success: 'Tạo shop mới thành công!', shops });
     } catch (err) {
@@ -125,6 +138,29 @@ exports.editShop = async (req, res) => {
       },
       { where: { id } }
     );
+    // Cập nhật user admin trong DB shop nếu có username hoặc password mới
+    if (req.body.username) {
+      const shopDB = loadShopDB(req.body.slug);
+      const { Sequelize, DataTypes } = require('sequelize');
+      const User = shopDB.define('User', {
+        username: DataTypes.STRING,
+        password: DataTypes.STRING
+      }, { tableName: 'Users', timestamps: false });
+      await shopDB.sync();
+      // Nếu có mật khẩu mới, cập nhật cả username và password
+      if (req.body.password) {
+        await User.update(
+          { username: req.body.username, password: req.body.password },
+          { where: {}, limit: 1 }
+        );
+      } else {
+        // Nếu chỉ đổi username
+        await User.update(
+          { username: req.body.username },
+          { where: {}, limit: 1 }
+        );
+      }
+    }
     const shops = await Shop.findAll({ order: [['id', 'DESC']] });
     res.render('admin/createShop', { success: 'Đã sửa shop thành công!', shops });
   } catch (err) {

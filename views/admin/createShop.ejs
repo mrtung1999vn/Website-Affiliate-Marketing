@@ -348,6 +348,20 @@
         <label for="logo">Logo shop (tùy chọn)</label>
         <input id="logo" name="logo" type="file" accept="image/*" style="margin-bottom:18px;" />
       </div>
+      <div>
+        <label for="adminUsername">Tài khoản đăng nhập Shop (username)</label>
+        <input id="adminUsername" name="adminUsername" type="text" placeholder="Tên đăng nhập Shop" required autocomplete="username" />
+      </div>
+      <div style="position:relative;">
+        <label for="adminPassword">Mật khẩu đăng nhập Shop</label>
+        <input id="adminPassword" name="adminPassword" type="password" placeholder="Mật khẩu Shop" required autocomplete="new-password" style="padding-right:36px;" />
+        <span class="toggle-password" onclick="togglePassword('adminPassword', this)" style="position:absolute;right:10px;top:38px;cursor:pointer;user-select:none;">👁️</span>
+      </div>
+      <div style="position:relative;">
+        <label for="adminPasswordConfirm">Xác nhận lại mật khẩu</label>
+        <input id="adminPasswordConfirm" name="adminPasswordConfirm" type="password" placeholder="Nhập lại mật khẩu" required autocomplete="new-password" style="padding-right:36px;" />
+        <span class="toggle-password" onclick="togglePassword('adminPasswordConfirm', this)" style="position:absolute;right:10px;top:38px;cursor:pointer;user-select:none;">👁️</span>
+      </div>
       <button type="submit">Tạo shop</button>
     </form>
   </div>
@@ -386,6 +400,7 @@
                 data-id="<%= shop.id %>"
                 data-name="<%= shop.name %>"
                 onclick="openDeleteModalFromButton(this)">Xoá</button>
+              <a href="/shop/<%= shop.slug %>/login" class="edit-btn" style="background:#007bff;color:#fff;margin-left:6px;">Đăng nhập Shop</a>
             </div>
           </li>
         <% }) %>
@@ -419,10 +434,24 @@
         <label for="edit-email">Email</label>
         <input id="edit-email" name="email" type="email" required />
       </div>
+      <div>
+        <label for="edit-username">Tài khoản đăng nhập Shop (username)</label>
+        <input id="edit-username" name="username" type="text" placeholder="Tên đăng nhập Shop" required autocomplete="username" />
+      </div>
       <div id="edit-logo-preview" style="margin-bottom:10px;text-align:center;"></div>
       <div>
         <label for="edit-logo">Logo shop (nếu muốn thay đổi)</label>
         <input id="edit-logo" name="logo" type="file" accept="image/*" />
+      </div>
+      <div style="position:relative;">
+        <label for="edit-password">Mật khẩu mới (nếu muốn đổi)</label>
+        <input id="edit-password" name="password" type="password" placeholder="Để trống nếu không đổi" autocomplete="new-password" style="padding-right:36px;" />
+        <span class="toggle-password" onclick="togglePassword('edit-password', this)" style="position:absolute;right:10px;top:38px;cursor:pointer;user-select:none;">👁️</span>
+      </div>
+      <div style="position:relative;">
+        <label for="edit-password-confirm">Xác nhận lại mật khẩu mới</label>
+        <input id="edit-password-confirm" name="passwordConfirm" type="password" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password" style="padding-right:36px;" />
+        <span class="toggle-password" onclick="togglePassword('edit-password-confirm', this)" style="position:absolute;right:10px;top:38px;cursor:pointer;user-select:none;">👁️</span>
       </div>
       <button type="submit" class="edit-btn">Lưu thay đổi</button>
     </form>
@@ -455,11 +484,14 @@
     // Hiển thị logo hiện tại nếu có
     var preview = document.getElementById('edit-logo-preview');
     if (logo) {
-      // Sửa đường dẫn để tránh lặp /uploads/uploads/
       var logoSrc = logo.startsWith('uploads/') ? '/' + logo : '/uploads/' + logo;
       preview.innerHTML = '<div style="margin-bottom:6px;">Logo hiện tại:</div><img src="' + logoSrc + '" alt="Logo shop" style="max-width:80px;max-height:80px;border-radius:8px;box-shadow:0 2px 8px #ccc;margin-bottom:4px;">';
     } else {
       preview.innerHTML = '<div style="color:#aaa;font-size:0.97em;">Chưa có logo</div>';
+    }
+    // Nếu có username (cần truyền thêm khi gọi openEditModal)
+    if (typeof arguments[6] !== 'undefined') {
+      document.getElementById('edit-username').value = arguments[6];
     }
     document.getElementById('editModal').style.display = 'flex';
   }
@@ -534,6 +566,40 @@
     document.getElementById('slug').value = value;
   });
 
+  // Ẩn/hiện mật khẩu
+  function togglePassword(inputId, icon) {
+    var input = document.getElementById(inputId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      icon.textContent = '👁️';
+    }
+  }
+  // Kiểm tra xác nhận mật khẩu khi submit
+  document.querySelector('.create-shop-container form').addEventListener('submit', function(e) {
+    var pw = document.getElementById('adminPassword').value;
+    var pw2 = document.getElementById('adminPasswordConfirm').value;
+    if (pw !== pw2) {
+      alert('Mật khẩu xác nhận không khớp!');
+      e.preventDefault();
+      return false;
+    }
+  });
+  // Kiểm tra xác nhận mật khẩu khi sửa shop
+  document.getElementById('editForm').addEventListener('submit', function(e) {
+    var pw = document.getElementById('edit-password').value;
+    var pw2 = document.getElementById('edit-password-confirm').value;
+    if (pw || pw2) {
+      if (pw !== pw2) {
+        alert('Mật khẩu xác nhận không khớp!');
+        e.preventDefault();
+        return false;
+      }
+    }
+  });
+
   // Thêm 2 hàm hỗ trợ gọi modal qua data attribute
   function openEditModalFromButton(btn) {
     openEditModal(
@@ -542,7 +608,8 @@
       btn.dataset.slug,
       btn.dataset.owner,
       btn.dataset.email,
-      btn.dataset.logo // truyền logo filename
+      btn.dataset.logo, // truyền logo filename
+      btn.dataset.username // truyền username
     );
   }
   function openDeleteModalFromButton(btn) {
