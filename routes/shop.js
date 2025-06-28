@@ -9,4 +9,9 @@ router.get('/:slug/products', shopController.getProducts);
 router.get('/:slug/orders', shopController.getOrders);
 router.get('/:slug/reports', shopController.getReports);
 
+exports.loginPage = (req, res) => {
+  const slug = req.params.slug;
+  res.render('shop/login', { slug });
+};
+
 module.exports = router;

@@ -7,6 +7,27 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      padding-top: 54px;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+      background-attachment: fixed;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: repeating-linear-gradient(135deg, rgba(0, 123, 255, 0.08) 0 2px, transparent 2px 40px),
+        repeating-linear-gradient(45deg, rgba(38, 208, 206, 0.06) 0 2px, transparent 2px 40px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.7;
+      mix-blend-mode: lighten;
     }
 
     .api-list {
@@ -87,6 +108,28 @@
       max-width: 400px;
       margin: 80px auto;
     }
+
+    @media (max-width: 600px) {
+      .api-list {
+        width: 98%;
+        margin: 16px auto;
+      }
+
+      .api-item {
+        padding: 10px;
+        font-size: 0.97em;
+      }
+
+      .api-detail {
+        padding: 8px;
+      }
+
+      .param-table th,
+      .param-table td {
+        font-size: 0.97em;
+        padding: 2px 4px;
+      }
+    }
   </style>
 </head>
 
@@ -98,6 +141,7 @@
       <div>
         <span class="api-method"><%= api.method %></span>
         <span class="api-path"><%= api.path %></span>
+        <a href="<%= api.path %>" target="_blank" style="margin-left:12px;color:#00b894;text-decoration:underline;font-size:0.98em;">Đi tới API</a>
         <button onclick="openEditApi(<%= idx %>)" style="float:right;">Sửa</button>
       </div>
       <% if (api.desc) { %>

@@ -1,9 +1,158 @@
 <%- include('../partials/header') %>
-<h2>Shop Dashboard</h2>
-<nav>
-  <a href="users">CTV</a> |
-  <a href="products">Sản phẩm</a> |
-  <a href="orders">Đơn hàng</a> |
-  <a href="reports">Báo cáo</a>
-</nav>
+
+<style>
+  .shop-dashboard-container {
+    max-width: 900px;
+    margin: 40px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 32px 20px 24px 20px;
+    min-height: 340px;
+  }
+  .shop-dashboard-title {
+    text-align: center;
+    color: #2d3a4b;
+    font-size: 2em;
+    margin-bottom: 32px;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .shop-dashboard-nav {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .shop-dashboard-nav a {
+    display: inline-block;
+    background: linear-gradient(90deg, #007bff 60%, #00c6ff 100%);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 1.05em;
+    font-weight: 500;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.07);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .shop-dashboard-nav a:hover {
+    background: linear-gradient(90deg, #0056b3 60%, #009ec3 100%);
+  }
+  .shop-dashboard-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .stat-box {
+    background: #f7f7f7;
+    border-radius: 12px;
+    padding: 24px 28px 16px 28px;
+    min-width: 180px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .stat-title {
+    color: #888;
+    font-size: 1em;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .stat-value {
+    color: #007bff;
+    font-size: 2.1em;
+    font-weight: bold;
+    margin-bottom: 0;
+  }
+  .shop-dashboard-features {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .feature-box {
+    background: #f7f7f7;
+    border-radius: 12px;
+    padding: 24px 28px 16px 28px;
+    min-width: 180px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .feature-title {
+    color: #888;
+    font-size: 1em;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .feature-desc {
+    color: #2d3a4b;
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 0;
+  }
+  @media (max-width: 600px) {
+    .shop-dashboard-container {
+      padding: 16px 4px 12px 4px;
+    }
+    .shop-dashboard-stats, .shop-dashboard-features {
+      flex-direction: column;
+      gap: 18px;
+    }
+    .stat-box, .feature-box {
+      padding: 16px 8px 10px 8px;
+      min-width: 120px;
+    }
+  }
+</style>
+
+<div class="shop-dashboard-container">
+  <div class="shop-dashboard-title">Shop Dashboard</div>
+  <nav class="shop-dashboard-nav">
+    <a href="users">👥 CTV</a>
+    <a href="products">📦 Sản phẩm</a>
+    <a href="orders">🧾 Đơn hàng</a>
+    <a href="reports">📊 Báo cáo</a>
+  </nav>
+  <div class="shop-dashboard-stats">
+    <div class="stat-box">
+      <div class="stat-title">Tổng số CTV</div>
+      <div class="stat-value"><%= typeof totalUsers !== 'undefined' ? totalUsers : '--' %></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-title">Tổng số sản phẩm</div>
+      <div class="stat-value"><%= typeof totalProducts !== 'undefined' ? totalProducts : '--' %></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-title">Tổng số đơn hàng</div>
+      <div class="stat-value"><%= typeof totalOrders !== 'undefined' ? totalOrders : '--' %></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-title">Tổng doanh thu</div>
+      <div class="stat-value"><%= typeof totalRevenue !== 'undefined' ? totalRevenue.toLocaleString('vi-VN') : '--' %> đ</div>
+    </div>
+  </div>
+  <div class="shop-dashboard-features">
+    <div class="feature-box">
+      <div class="feature-title">Quản lý CTV</div>
+      <div class="feature-desc">Thêm, sửa, xoá cộng tác viên</div>
+    </div>
+    <div class="feature-box">
+      <div class="feature-title">Quản lý sản phẩm</div>
+      <div class="feature-desc">Tạo, cập nhật, phân loại sản phẩm</div>
+    </div>
+    <div class="feature-box">
+      <div class="feature-title">Quản lý đơn hàng</div>
+      <div class="feature-desc">Theo dõi, xác nhận, đối soát hoa hồng</div>
+    </div>
+    <div class="feature-box">
+      <div class="feature-title">Báo cáo & Thi đua</div>
+      <div class="feature-desc">Xem doanh thu, top CTV, thống kê</div>
+    </div>
+  </div>
+</div>
+
 <%- include('../partials/footer') %>

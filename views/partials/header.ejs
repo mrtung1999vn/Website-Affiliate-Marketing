@@ -6,6 +6,26 @@
   <link rel="stylesheet" href="/css/style.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    body {
+      padding-top: 54px;
+      min-height: 100vh;
+      /* Nền gradient xanh công nghệ */
+      background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+      background-attachment: fixed;
+      /* Hiệu ứng pattern nhẹ */
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: repeating-linear-gradient(135deg, rgba(0,123,255,0.08) 0 2px, transparent 2px 40px), repeating-linear-gradient(45deg, rgba(38,208,206,0.06) 0 2px, transparent 2px 40px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.7;
+      mix-blend-mode: lighten;
+    }
     nav.fixed-nav {
       width: 100%;
       background: #fff;
@@ -54,12 +74,10 @@
         font-size: 0.97em;
       }
     }
-    body {
-      padding-top: 54px;
-    }
   </style>
 </head>
 <body>
+<% if (typeof slug === 'undefined' || !slug) { %>
 <nav class="fixed-nav">
   <div class="nav-inner">
     <a href="/" class="nav-link<%= (typeof page !== 'undefined' && page === 'home') ? ' active' : '' %>">Trang chủ</a>
@@ -69,3 +87,4 @@
     <a href="/shop/testshop/login" class="nav-link">Đăng nhập Shop</a>
   </div>
 </nav>
+<% } %>

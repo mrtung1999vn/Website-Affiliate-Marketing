@@ -13,6 +13,7 @@ const Shop = sequelize.define('Shop', {
   slug: DataTypes.STRING,
   owner: DataTypes.STRING,
   email: DataTypes.STRING,
+  logo: DataTypes.STRING, // Thêm trường logo
   dbFile: DataTypes.STRING
 });
 

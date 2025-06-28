@@ -1,41 +1,50 @@
 <%- include('../partials/header') %>
 
 <style>
-  body {
-    background: #f7f7f7;
+  .login-bg-tech {
     min-height: 100vh;
-    margin: 0;
-    font-family: 'Segoe UI', Arial, sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 1;
   }
   .login-container {
     width: 100%;
     max-width: 370px;
-    margin: 40px auto;
     background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
-    padding: 32px 24px 24px 24px;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+    padding: 36px 28px 28px 28px;
     box-sizing: border-box;
+    border: 2.5px solid #e0e7ef;
+    position: relative;
+    z-index: 2;
   }
-  .login-container h2 {
+  .login-title {
     text-align: center;
-    margin-bottom: 28px;
     color: #2d3a4b;
-    font-size: 1.6em;
+    font-size: 1.5em;
+    margin-bottom: 28px;
+    font-weight: 700;
     letter-spacing: 1px;
   }
-  .login-container label {
-    display: block;
-    margin-bottom: 7px;
-    color: #444;
-    font-weight: 500;
-    font-size: 1em;
+  .login-tech-img {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 18px;
   }
-  .login-container input[type="text"],
-  .login-container input[type="password"] {
+  .login-tech-img img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px #00c6ff33);
+    border-radius: 50%;
+    background: #f0f7ff;
+    padding: 8px;
+  }
+  .login-form input[type="text"],
+  .login-form input[type="password"] {
     width: 100%;
     padding: 12px 14px;
     margin-bottom: 20px;
@@ -46,13 +55,13 @@
     transition: border 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
   }
-  .login-container input:focus {
+  .login-form input:focus {
     border: 1.5px solid #007bff;
     outline: none;
     background: #fff;
     box-shadow: 0 2px 8px rgba(0,123,255,0.08);
   }
-  .login-container button[type="submit"] {
+  .login-form button[type="submit"] {
     width: 100%;
     padding: 13px;
     background: linear-gradient(90deg, #007bff 60%, #00c6ff 100%);
@@ -66,8 +75,18 @@
     margin-top: 8px;
     box-shadow: 0 2px 8px rgba(0,123,255,0.07);
   }
-  .login-container button[type="submit"]:hover {
+  .login-form button[type="submit"]:hover {
     background: linear-gradient(90deg, #0056b3 60%, #009ec3 100%);
+  }
+  .login-footer {
+    text-align: center;
+    color: #888;
+    font-size: 0.98em;
+    margin-top: 32px;
+    margin-bottom: 8px;
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    z-index: 3;
   }
   @media (max-width: 480px) {
     body {
@@ -79,30 +98,32 @@
       border-radius: 10px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     }
-    .login-container h2 {
+    .login-title {
       font-size: 1.2em;
     }
-    .login-container input,
-    .login-container button[type="submit"] {
+    .login-form input,
+    .login-form button[type="submit"] {
       font-size: 1em;
       padding: 10px 8px;
     }
   }
 </style>
 
-<div class="login-container">
-  <h2>Đăng nhập Shop</h2>
-  <form method="POST" action="/shop/<%= slug %>/login">
-    <div>
-      <label for="username">Tên đăng nhập:</label>
-      <input type="text" id="username" name="username" required autocomplete="username" />
+<div class="login-bg-tech">
+  <div class="login-container">
+    <div class="login-tech-img">
+      <img src="/images/logo.png" alt="Shop Tech" />
     </div>
-    <div>
-      <label for="password">Mật khẩu:</label>
-      <input type="password" id="password" name="password" required autocomplete="current-password" />
-    </div>
-    <button type="submit">Đăng nhập</button>
-  </form>
+    <div class="login-title">Đăng nhập Shop</div>
+    <form class="login-form" method="POST" action="/shop/<%= slug %>/login">
+      <input type="text" name="username" placeholder="Tên đăng nhập" required />
+      <input type="password" name="password" placeholder="Mật khẩu" required />
+      <button type="submit">Đăng nhập</button>
+    </form>
+  </div>
+  <div class="login-footer">
+    © 2025 Affiliate Marketing System - All rights reserved.
+  </div>
 </div>
 
 <%- include('../partials/footer') %>

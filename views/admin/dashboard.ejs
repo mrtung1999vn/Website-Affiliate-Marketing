@@ -1,4 +1,105 @@
 <%- include('../partials/header') %>
-<h2>Admin Dashboard</h2>
-<a href="/admin/shops/create">Tạo Shop mới</a>
+
+<style>
+  .dashboard-container {
+    max-width: 900px;
+    margin: 40px auto 0 auto;
+    padding: 32px 20px 24px 20px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    min-height: 340px;
+  }
+  .dashboard-title {
+    text-align: center;
+    color: #2d3a4b;
+    font-size: 2em;
+    margin-bottom: 32px;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .dashboard-actions {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+  .dashboard-actions a {
+    display: inline-block;
+    background: linear-gradient(90deg, #007bff 60%, #00c6ff 100%);
+    color: #fff;
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.07);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .dashboard-actions a:hover {
+    background: linear-gradient(90deg, #0056b3 60%, #009ec3 100%);
+  }
+  .dashboard-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .stat-box {
+    background: #f7f7f7;
+    border-radius: 12px;
+    padding: 28px 32px 18px 32px;
+    min-width: 180px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .stat-title {
+    color: #888;
+    font-size: 1em;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .stat-value {
+    color: #007bff;
+    font-size: 2.1em;
+    font-weight: bold;
+    margin-bottom: 0;
+  }
+  @media (max-width: 600px) {
+    .dashboard-container {
+      padding: 16px 4px 12px 4px;
+    }
+    .dashboard-stats {
+      flex-direction: column;
+      gap: 18px;
+    }
+    .stat-box {
+      padding: 18px 10px 12px 10px;
+      min-width: 120px;
+    }
+  }
+</style>
+
+<div class="dashboard-container">
+  <div class="dashboard-title">Admin Dashboard</div>
+  <div class="dashboard-actions">
+    <a href="/admin/shops/create">+ Tạo Shop mới</a>
+  </div>
+  <div class="dashboard-stats">
+    <div class="stat-box">
+      <div class="stat-title">Tổng số Shop</div>
+      <div class="stat-value"><%= typeof totalShops !== 'undefined' ? totalShops : '--' %></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-title">Tổng số CTV</div>
+      <div class="stat-value"><%= typeof totalAffiliates !== 'undefined' ? totalAffiliates : '--' %></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-title">Tổng số sản phẩm</div>
+      <div class="stat-value"><%= typeof totalProducts !== 'undefined' ? totalProducts : '--' %></div>
+    </div>
+  </div>
+  <!-- Có thể bổ sung thêm các bảng/tóm tắt khác ở đây -->
+</div>
+
 <%- include('../partials/footer') %>

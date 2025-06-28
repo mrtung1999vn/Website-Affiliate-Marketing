@@ -2,31 +2,44 @@
 
 <style>
   body {
-    background: #f7f7f7;
+    background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+    background-attachment: fixed;
+    padding-top: 54px;
     min-height: 100vh;
     margin: 0;
     font-family: 'Segoe UI', Arial, sans-serif;
     /* Xóa flex để footer luôn ở dưới */
     display: block;
   }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: repeating-linear-gradient(135deg, rgba(0,123,255,0.08) 0 2px, transparent 2px 40px), repeating-linear-gradient(45deg, rgba(38,208,206,0.06) 0 2px, transparent 2px 40px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.7;
+    mix-blend-mode: lighten;
+  }
   .main-flex {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    flex-direction: column;
     gap: 32px;
     max-width: 900px;
     margin: 48px auto 0 auto;
     padding: 0 8px;
+    min-height: calc(100vh - 54px - 60px); /* header 54px, footer 60px */
+    box-sizing: border-box;
   }
   .create-shop-container {
-    flex: 1 1 340px;
     max-width: 370px;
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.10);
     padding: 32px 24px 24px 24px;
     box-sizing: border-box;
-    margin-bottom: 24px;
+    margin: 0 auto 24px auto;
+    width: 100%;
   }
   .create-shop-container h2 {
     text-align: center;
@@ -79,14 +92,14 @@
     background: linear-gradient(90deg, #0056b3 60%, #009ec3 100%);
   }
   .shop-list-container {
-    flex: 1 1 340px;
     max-width: 370px;
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.10);
     padding: 24px 18px 18px 18px;
     box-sizing: border-box;
-    margin-bottom: 24px;
+    margin: 0 auto 24px auto;
+    width: 100%;
   }
   .shop-list-container h3 {
     text-align: center;
@@ -125,6 +138,44 @@
       padding: 10px 8px;
     }
   }
+  @media (max-width: 600px) {
+      .create-shop-container {
+        margin: 24px 4px;
+        padding: 20px 8px 16px 8px;
+        border-radius: 10px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      }
+      .create-shop-container h2 {
+        font-size: 1.2em;
+      }
+      .create-shop-container input,
+      .create-shop-container button[type="submit"] {
+        font-size: 1em;
+        padding: 10px 8px;
+      }
+      .main-flex {
+        min-height: calc(100vh - 54px - 60px);
+      }
+    }
+  @media (min-width: 900px) {
+    .main-flex {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 40px;
+      min-height: calc(100vh - 54px - 60px);
+    }
+    .create-shop-container, .shop-list-container {
+      max-width: 420px;
+      width: 100%;
+      margin: 0;
+    }
+    .create-shop-container {
+      margin-right: 0;
+    }
+    .shop-list-container {
+      margin-left: 0;
+    }
+  }
   /* Đảm bảo footer luôn ở dưới cùng */
   html, body {
     height: 100%;
@@ -132,12 +183,12 @@
   body {
     min-height: 100vh;
     position: relative;
-    padding-bottom: 60px; /* chiều cao footer */
+    padding-bottom: 0; /* bỏ padding vì footer không còn fixed */
   }
   footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
+    position: static; /* chuyển sang static để không che nội dung */
+    left: unset;
+    bottom: unset;
     width: 100%;
     background: #f7f7f7;
     text-align: center;
@@ -276,7 +327,7 @@
 <div class="main-flex">
   <div class="create-shop-container">
     <h2>Tạo Shop mới</h2>
-    <form method="POST" action="/admin/shops/create">
+    <form method="POST" action="/admin/shops/create" enctype="multipart/form-data">
       <div>
         <label for="name">Tên Shop</label>
         <input id="name" name="name" type="text" placeholder="Tên Shop" required />
@@ -292,6 +343,10 @@
       <div>
         <label for="email">Email</label>
         <input id="email" name="email" type="email" placeholder="Email" required />
+      </div>
+      <div>
+        <label for="logo">Logo shop (tùy chọn)</label>
+        <input id="logo" name="logo" type="file" accept="image/*" style="margin-bottom:18px;" />
       </div>
       <button type="submit">Tạo shop</button>
     </form>
@@ -319,10 +374,18 @@
             <span style="font-size:0.95em;color:#888;">Chủ shop: <%= shop.owner %></span><br>
             <span style="font-size:0.95em;color:#888;">Email: <%= shop.email %></span>
             <div style="margin-top:8px;">
-              <button class="edit-btn" 
-                onclick="openEditModal(<%= shop.id %>, '<%= shop.name %>', '<%= shop.slug %>', '<%= shop.owner %>', '<%= shop.email %>')">Sửa</button>
-              <button class="delete-btn" 
-                onclick="openDeleteModal(<%= shop.id %>, '<%= shop.name %>')">Xoá</button>
+              <button class="edit-btn"
+                data-id="<%= shop.id %>"
+                data-name="<%= shop.name %>"
+                data-slug="<%= shop.slug %>"
+                data-owner="<%= shop.owner %>"
+                data-email="<%= shop.email %>"
+                data-logo="<%= shop.logo ? shop.logo : '' %>"
+                onclick="openEditModalFromButton(this)">Sửa</button>
+              <button class="delete-btn"
+                data-id="<%= shop.id %>"
+                data-name="<%= shop.name %>"
+                onclick="openDeleteModalFromButton(this)">Xoá</button>
             </div>
           </li>
         <% }) %>
@@ -338,7 +401,7 @@
   <div class="modal-content">
     <span class="close" onclick="closeEditModal()">&times;</span>
     <h3>Sửa thông tin Shop</h3>
-    <form id="editForm" method="POST">
+    <form id="editForm" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="id" id="edit-id" />
       <div>
         <label for="edit-name">Tên Shop</label>
@@ -355,6 +418,11 @@
       <div>
         <label for="edit-email">Email</label>
         <input id="edit-email" name="email" type="email" required />
+      </div>
+      <div id="edit-logo-preview" style="margin-bottom:10px;text-align:center;"></div>
+      <div>
+        <label for="edit-logo">Logo shop (nếu muốn thay đổi)</label>
+        <input id="edit-logo" name="logo" type="file" accept="image/*" />
       </div>
       <button type="submit" class="edit-btn">Lưu thay đổi</button>
     </form>
@@ -377,13 +445,22 @@
 
 <script>
   // Sửa shop
-  function openEditModal(id, name, slug, owner, email) {
+  function openEditModal(id, name, slug, owner, email, logo) {
     document.getElementById('edit-id').value = id;
     document.getElementById('edit-name').value = name;
     document.getElementById('edit-slug').value = slug;
     document.getElementById('edit-owner').value = owner;
     document.getElementById('edit-email').value = email;
     document.getElementById('editForm').action = '/admin/shops/edit/' + id;
+    // Hiển thị logo hiện tại nếu có
+    var preview = document.getElementById('edit-logo-preview');
+    if (logo) {
+      // Sửa đường dẫn để tránh lặp /uploads/uploads/
+      var logoSrc = logo.startsWith('uploads/') ? '/' + logo : '/uploads/' + logo;
+      preview.innerHTML = '<div style="margin-bottom:6px;">Logo hiện tại:</div><img src="' + logoSrc + '" alt="Logo shop" style="max-width:80px;max-height:80px;border-radius:8px;box-shadow:0 2px 8px #ccc;margin-bottom:4px;">';
+    } else {
+      preview.innerHTML = '<div style="color:#aaa;font-size:0.97em;">Chưa có logo</div>';
+    }
     document.getElementById('editModal').style.display = 'flex';
   }
   function closeEditModal() {
@@ -456,6 +533,24 @@
       .replace(/^-+|-+$/g, '');     // bỏ - ở đầu/cuối
     document.getElementById('slug').value = value;
   });
+
+  // Thêm 2 hàm hỗ trợ gọi modal qua data attribute
+  function openEditModalFromButton(btn) {
+    openEditModal(
+      btn.dataset.id,
+      btn.dataset.name,
+      btn.dataset.slug,
+      btn.dataset.owner,
+      btn.dataset.email,
+      btn.dataset.logo // truyền logo filename
+    );
+  }
+  function openDeleteModalFromButton(btn) {
+    openDeleteModal(
+      btn.dataset.id,
+      btn.dataset.name
+    );
+  }
 </script>
 
 <%- include('../partials/footer') %>
