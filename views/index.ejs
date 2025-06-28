@@ -1,50 +1,209 @@
 <!-- filepath: f:\24_tool_thu_thuat\Website-Affiliate-Marketing\views\index.ejs -->
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Danh sách API</title>
+  <title>API Docs</title>
   <style>
-    body { font-family: Arial, sans-serif; }
-    .api-list { width: 70%; margin: 40px auto; }
-    .api-item { border: 1px solid #ccc; border-radius: 6px; margin-bottom: 18px; padding: 18px; background: #f9f9f9; }
-    .api-method { font-weight: bold; color: #007bff; }
-    .api-path { font-family: monospace; font-size: 1.1em; }
-    .api-desc { margin-top: 8px; color: #333; }
-    .api-detail { display: none; margin-top: 12px; background: #fff; border: 1px solid #eee; padding: 12px; border-radius: 4px; }
-    .show-btn { margin-top: 10px; cursor: pointer; color: #007bff; background: none; border: none; font-size: 1em; }
-    pre { background: #f4f4f4; padding: 8px; border-radius: 4px; }
-  </style>
-  <script>
-    function toggleDetail(idx) {
-      var detail = document.getElementById('api-detail-' + idx);
-      if (detail.style.display === 'block') {
-        detail.style.display = 'none';
-      } else {
-        detail.style.display = 'block';
-      }
+    body {
+      font-family: Arial, sans-serif;
     }
-  </script>
+
+    .api-list {
+      width: 70%;
+      margin: 40px auto;
+    }
+
+    .api-item {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 18px;
+      padding: 18px;
+      background: #f9f9f9;
+    }
+
+    .api-method {
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .api-path {
+      font-family: monospace;
+      font-size: 1.1em;
+    }
+
+    .api-desc {
+      margin-top: 8px;
+      color: #333;
+    }
+
+    .api-detail {
+      margin-top: 12px;
+      background: #fff;
+      border: 1px solid #eee;
+      padding: 12px;
+      border-radius: 4px;
+    }
+
+    pre {
+      background: #f4f4f4;
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    .param-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    .param-table th,
+    .param-table td {
+      border: 1px solid #ddd;
+      padding: 4px 8px;
+    }
+
+    .param-table th {
+      background: #f0f0f0;
+    }
+
+    #editApiModal {
+      display: none;
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.18);
+      align-items: center;
+      justify-content: center;
+    }
+
+    #editApiModal .modal-content {
+      background: #fff;
+      padding: 24px 18px;
+      border-radius: 10px;
+      max-width: 400px;
+      margin: 80px auto;
+    }
+  </style>
 </head>
+
 <body>
   <h2 style="text-align:center;">Danh sách API chi tiết</h2>
   <div class="api-list">
-    <% apis.forEach((api, idx) => { %>
-      <div class="api-item">
-        <div>
-          <span class="api-method"><%= api.method %></span>
-          <span class="api-path"><%= api.path %></span>
-          <span style="color:#aaa;">(<%= idx %>)</span>
-        </div>
-        <div class="api-desc"><strong>Chức năng:</strong> <%= api.desc %></div>
-        <button class="show-btn" onclick="toggleDetail(<%- idx %>)">Xem chi tiết</button>
-        <div class="api-detail" id="api-detail-<%= idx %>">
-          <div><strong>Ví dụ request:</strong></div>
-          <pre><%= api.exampleRequest %></pre>
-          <div><strong>Ví dụ response:</strong></div>
-          <pre><%= api.exampleResponse %></pre>
-        </div>
+    <% apis.forEach(function(api, idx) { %>
+    <div class="api-item">
+      <div>
+        <span class="api-method"><%= api.method %></span>
+        <span class="api-path"><%= api.path %></span>
+        <button onclick="openEditApi(<%= idx %>)" style="float:right;">Sửa</button>
       </div>
+      <% if (api.desc) { %>
+      <div class="api-desc"><strong>Chức năng:</strong> <%= api.desc %></div>
+      <% } %>
+      <div class="api-detail">
+        <% if (api.curl) { %>
+        <div><strong>cURL:</strong></div>
+        <pre><%= api.curl %></pre>
+        <% } %>
+        <% if (api.params && api.params.length) { %>
+        <div><strong>Params:</strong></div>
+        <table class="param-table">
+          <tr>
+            <th>Tên</th>
+            <th>Kiểu</th>
+            <th>Bắt buộc</th>
+            <th>Mô tả</th>
+          </tr>
+          <% api.params.forEach(function(p) { %>
+          <tr>
+            <td><%= p.name %></td>
+            <td><%= p.type %></td>
+            <td><%= p.required ? '✔' : '' %></td>
+            <td><%= p.desc %></td>
+          </tr>
+          <% }) %>
+        </table>
+        <% } %>
+        <% if (api.headers && api.headers.length) { %>
+        <div><strong>Headers:</strong></div>
+        <ul>
+          <% api.headers.forEach(function(h) { %>
+          <li><%= h.name %>: <%= h.value %></li>
+          <% }) %>
+        </ul>
+        <% } %>
+        <% if (api.body) { %>
+        <div><strong>Body:</strong> <%= api.body %></div>
+        <% } %>
+        <% if (api.token) { %>
+        <div><strong>Yêu cầu Token:</strong> <%= api.token ? 'Có' : 'Không' %></div>
+        <% } %>
+        <% if (api.exampleRequest) { %>
+        <div><strong>Ví dụ request:</strong></div>
+        <pre><%= api.exampleRequest %></pre>
+        <% } %>
+        <% if (api.exampleResponse) { %>
+        <div><strong>Ví dụ response:</strong></div>
+        <pre><%= api.exampleResponse %></pre>
+        <% } %>
+      </div>
+    </div>
     <% }) %>
   </div>
+
+  <div id="editApiModal">
+    <div class="modal-content">
+      <h3>Sửa mô tả API</h3>
+      <form id="editApiForm" onsubmit="saveEditApi(event)">
+        <input type="hidden" id="editApiIdx" />
+        <div>
+          <label>Mô tả</label>
+          <input type="text" id="editApiDesc" style="width:100%;" />
+        </div>
+        <div>
+          <label>cURL</label>
+          <textarea id="editApiCurl" style="width:100%;"></textarea>
+        </div>
+        <button type="submit">Lưu</button>
+        <button type="button" onclick="closeEditApi()">Huỷ</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let apis = <%- JSON.stringify(apis) %>;
+    function openEditApi(idx) {
+      document.getElementById('editApiIdx').value = idx;
+      document.getElementById('editApiDesc').value = apis[idx].desc || '';
+      document.getElementById('editApiCurl').value = apis[idx].curl || '';
+      document.getElementById('editApiModal').style.display = 'flex';
+    }
+    function closeEditApi() {
+      document.getElementById('editApiModal').style.display = 'none';
+    }
+    async function saveEditApi(e) {
+      e.preventDefault();
+      const idx = document.getElementById('editApiIdx').value;
+      apis[idx].desc = document.getElementById('editApiDesc').value;
+      apis[idx].curl = document.getElementById('editApiCurl').value;
+      // Gửi dữ liệu lên server để cập nhật file api-docs.json
+      const res = await fetch('/api/update-api-doc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idx, api: apis[idx] })
+      });
+      if (res.ok) {
+        alert('Đã lưu!');
+        closeEditApi();
+        location.reload();
+      } else {
+        alert('Lưu thất bại!');
+      }
+    }
+  </script>
 </body>
+
 </html>

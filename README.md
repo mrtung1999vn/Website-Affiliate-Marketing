@@ -33,7 +33,59 @@ Mỗi shop là một hệ thống riêng biệt:
 | UI Basic       | HTML + EJS layout                      |
 
 ---
+## 🧱 Cấu Trúc Thư Mục
+├── README.md
+├── affiliate-shop-system.zip
+├── api-docs.json
+├── controllers
+│   ├── adminController.js
+│   ├── affiliateController.js
+│   └── shopController.js
+├── generate-api-doc.js
+├── main.sqlite
+├── models
+│   ├── index.js
+│   └── models-main.js
+├── package-lock.json
+├── package.json
+├── public
+│   ├── css
+│   │   └── style.css
+│   ├── images
+│   │   └── logo.png
+│   └── js
+│       └── main.js
+├── reset-db.js
+├── routes
+│   ├── admin.js
+│   ├── api.js
+│   └── shop.js
+├── server.js
+├── shop_demo.sqlite
+├── show-structure.js
+├── utils
+│   ├── db-loader.js
+│   ├── format.js
+│   └── token-generator.js
+└── views
+    ├── admin
+    │   ├── createShop.ejs
+    │   ├── dashboard.ejs
+    │   ├── listShops.ejs
+    │   └── login.ejs
+    ├── index.ejs
+    ├── partials
+    │   ├── footer.ejs
+    │   └── header.ejs
+    └── shop
+        ├── dashboard.ejs
+        ├── login.ejs
+        ├── orders.ejs
+        ├── products.ejs
+        ├── reports.ejs
+        └── users.ejs
 
+        
 ## ⚙️ Cài đặt và chạy thử
 
 ### 1. Clone và cài đặt

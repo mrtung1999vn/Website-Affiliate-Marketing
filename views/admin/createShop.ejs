@@ -1,8 +1,461 @@
-<h2>Tạo Shop mới</h2>
-<form method="POST" action="/admin/shops/create">
-  <input name="name" placeholder="Tên Shop" />
-  <input name="slug" placeholder="Slug (viết không dấu, không cách)" />
-  <input name="owner" placeholder="Chủ shop" />
-  <input name="email" placeholder="Email" />
-  <button type="submit">Tạo shop</button>
-</form>
+<%- include('../partials/header') %>
+
+<style>
+  body {
+    background: #f7f7f7;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    /* Xóa flex để footer luôn ở dưới */
+    display: block;
+  }
+  .main-flex {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 32px;
+    max-width: 900px;
+    margin: 48px auto 0 auto;
+    padding: 0 8px;
+  }
+  .create-shop-container {
+    flex: 1 1 340px;
+    max-width: 370px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 32px 24px 24px 24px;
+    box-sizing: border-box;
+    margin-bottom: 24px;
+  }
+  .create-shop-container h2 {
+    text-align: center;
+    margin-bottom: 28px;
+    color: #2d3a4b;
+    font-size: 1.5em;
+    letter-spacing: 1px;
+  }
+  .create-shop-container label {
+    display: block;
+    margin-bottom: 7px;
+    color: #444;
+    font-weight: 500;
+    font-size: 1em;
+    transition: color 0.2s;
+  }
+  .create-shop-container input[type="text"],
+  .create-shop-container input[type="email"] {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 22px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    background: #fafbfc;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+  }
+  .create-shop-container input:focus {
+    border: 1.5px solid #007bff;
+    outline: none;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.08);
+  }
+  .create-shop-container button[type="submit"] {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(90deg, #007bff 60%, #00c6ff 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    margin-top: 8px;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.07);
+  }
+  .create-shop-container button[type="submit"]:hover {
+    background: linear-gradient(90deg, #0056b3 60%, #009ec3 100%);
+  }
+  .shop-list-container {
+    flex: 1 1 340px;
+    max-width: 370px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 24px 18px 18px 18px;
+    box-sizing: border-box;
+    margin-bottom: 24px;
+  }
+  .shop-list-container h3 {
+    text-align: center;
+    margin-bottom: 18px;
+    color: #2d3a4b;
+    font-size: 1.2em;
+    letter-spacing: 1px;
+  }
+  .shop-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .shop-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    font-size: 1em;
+  }
+  .shop-list li:last-child {
+    border-bottom: none;
+  }
+  @media (max-width: 480px) {
+    .create-shop-container {
+      margin: 24px 4px;
+      padding: 20px 8px 16px 8px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .create-shop-container h2 {
+      font-size: 1.2em;
+    }
+    .create-shop-container input,
+    .create-shop-container button[type="submit"] {
+      font-size: 1em;
+      padding: 10px 8px;
+    }
+  }
+  /* Đảm bảo footer luôn ở dưới cùng */
+  html, body {
+    height: 100%;
+  }
+  body {
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 60px; /* chiều cao footer */
+  }
+  footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background: #f7f7f7;
+    text-align: center;
+    padding: 12px 0 8px 0;
+    font-size: 0.95em;
+    color: #888;
+    z-index: 10;
+  }
+  .edit-btn {
+    background: #ffc107;
+    color: #222;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 14px;
+    margin-right: 6px;
+    cursor: pointer;
+    font-size: 0.97em;
+    transition: background 0.2s;
+  }
+  .edit-btn:hover {
+    background: #ffb300;
+  }
+  .delete-btn {
+    background: #ff4d4f;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 14px;
+    cursor: pointer;
+    font-size: 0.97em;
+    transition: background 0.2s;
+  }
+  .delete-btn:hover {
+    background: #d9363e;
+  }
+  .modal {
+    display: flex;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.18);
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-content {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px 22px 18px 22px;
+    min-width: 320px;
+    max-width: 96vw;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+    position: relative;
+  }
+  .modal-content .close {
+    position: absolute;
+    right: 16px;
+    top: 10px;
+    font-size: 1.5em;
+    color: #888;
+    cursor: pointer;
+  }
+  .modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  .modal-content form > div {
+    margin-bottom: 12px;
+  }
+  .modal-content label {
+    display: block;
+    margin-bottom: 4px;
+    color: #444;
+    font-weight: 500;
+    font-size: 1em;
+  }
+  .modal-content input[type="text"],
+  .modal-content input[type="email"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.2px solid #e0e0e0;
+    border-radius: 7px;
+    font-size: 1em;
+    background: #fafbfc;
+    margin-bottom: 2px;
+  }
+  .shop-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    background: #f5f7fa;
+    border-radius: 8px;
+    padding: 6px 10px;
+    border: 1.5px solid #e0e0e0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  }
+  .shop-search-bar .search-icon {
+    display: flex;
+    align-items: center;
+    margin-right: 4px;
+  }
+  .shop-search-bar input[type="text"] {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1em;
+    padding: 7px 0 7px 0;
+    outline: none;
+    color: #222;
+  }
+  .shop-search-bar input[type="text"]:focus {
+    background: #fff;
+  }
+  .shop-search-bar select {
+    border: none;
+    background: #f0f4fa;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 1em;
+    color: #007bff;
+    outline: none;
+    transition: background 0.18s;
+  }
+  .shop-search-bar select:focus {
+    background: #e6f0ff;
+  }
+</style>
+
+<% if (typeof success !== 'undefined') { %>
+  <div style="max-width:400px;margin:24px auto 0 auto;padding:12px 18px;background:#e6ffed;color:#207245;border-radius:8px;border:1px solid #b7eb8f;text-align:center;">
+    <%= success %>
+  </div>
+<% } %>
+
+<div class="main-flex">
+  <div class="create-shop-container">
+    <h2>Tạo Shop mới</h2>
+    <form method="POST" action="/admin/shops/create">
+      <div>
+        <label for="name">Tên Shop</label>
+        <input id="name" name="name" type="text" placeholder="Tên Shop" required />
+      </div>
+      <div>
+        <label for="slug">Slug (viết không dấu, không cách)</label>
+        <input id="slug" name="slug" type="text" placeholder="Slug" required />
+      </div>
+      <div>
+        <label for="owner">Chủ shop</label>
+        <input id="owner" name="owner" type="text" placeholder="Chủ shop" required />
+      </div>
+      <div>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="Email" required />
+      </div>
+      <button type="submit">Tạo shop</button>
+    </form>
+  </div>
+  <div class="shop-list-container">
+    <h3>Danh sách Shop</h3>
+    <div class="shop-search-bar">
+      <span class="search-icon">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="7" stroke="#888" stroke-width="2"/><path d="M15.5 15.5L13 13" stroke="#888" stroke-width="2" stroke-linecap="round"/></svg>
+      </span>
+      <input type="text" id="shopSearch" placeholder="Tìm kiếm shop..." autocomplete="off">
+      <select id="shopLimit">
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </div>
+    <ul class="shop-list" id="shopList">
+      <% if (shops && shops.length > 0) { %>
+        <% shops.forEach(function(shop) { %>
+          <li data-name="<%= shop.name %>" data-slug="<%= shop.slug %>" data-owner="<%= shop.owner %>" data-email="<%= shop.email %>">
+            <strong><%= shop.name %></strong><br>
+            <span style="font-size:0.95em;color:#888;">Slug: <%= shop.slug %></span><br>
+            <span style="font-size:0.95em;color:#888;">Chủ shop: <%= shop.owner %></span><br>
+            <span style="font-size:0.95em;color:#888;">Email: <%= shop.email %></span>
+            <div style="margin-top:8px;">
+              <button class="edit-btn" 
+                onclick="openEditModal(<%= shop.id %>, '<%= shop.name %>', '<%= shop.slug %>', '<%= shop.owner %>', '<%= shop.email %>')">Sửa</button>
+              <button class="delete-btn" 
+                onclick="openDeleteModal(<%= shop.id %>, '<%= shop.name %>')">Xoá</button>
+            </div>
+          </li>
+        <% }) %>
+      <% } else { %>
+        <li>Chưa có shop nào.</li>
+      <% } %>
+    </ul>
+  </div>
+</div>
+
+<!-- Modal Sửa Shop -->
+<div id="editModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close" onclick="closeEditModal()">&times;</span>
+    <h3>Sửa thông tin Shop</h3>
+    <form id="editForm" method="POST">
+      <input type="hidden" name="id" id="edit-id" />
+      <div>
+        <label for="edit-name">Tên Shop</label>
+        <input id="edit-name" name="name" type="text" required />
+      </div>
+      <div>
+        <label for="edit-slug">Slug</label>
+        <input id="edit-slug" name="slug" type="text" required />
+      </div>
+      <div>
+        <label for="edit-owner">Chủ shop</label>
+        <input id="edit-owner" name="owner" type="text" required />
+      </div>
+      <div>
+        <label for="edit-email">Email</label>
+        <input id="edit-email" name="email" type="email" required />
+      </div>
+      <button type="submit" class="edit-btn">Lưu thay đổi</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Xoá Shop -->
+<div id="deleteModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close" onclick="closeDeleteModal()">&times;</span>
+    <h3>Xác nhận xoá Shop</h3>
+    <p id="deleteMsg"></p>
+    <form id="deleteForm" method="POST">
+      <input type="hidden" name="id" id="delete-id" />
+      <button type="submit" class="delete-btn">Xoá</button>
+      <button type="button" onclick="closeDeleteModal()">Huỷ</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Sửa shop
+  function openEditModal(id, name, slug, owner, email) {
+    document.getElementById('edit-id').value = id;
+    document.getElementById('edit-name').value = name;
+    document.getElementById('edit-slug').value = slug;
+    document.getElementById('edit-owner').value = owner;
+    document.getElementById('edit-email').value = email;
+    document.getElementById('editForm').action = '/admin/shops/edit/' + id;
+    document.getElementById('editModal').style.display = 'flex';
+  }
+  function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+  }
+
+  // Xoá shop
+  function openDeleteModal(id, name) {
+    document.getElementById('delete-id').value = id;
+    document.getElementById('deleteMsg').innerText = 'Bạn có chắc muốn xoá shop "' + name + '"?';
+    document.getElementById('deleteForm').action = '/admin/shops/delete/' + id;
+    document.getElementById('deleteModal').style.display = 'flex';
+  }
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+  }
+
+  // Tìm kiếm và phân trang shop
+  const allShopLis = Array.from(document.querySelectorAll('#shopList li[data-name]'));
+  const shopListUl = document.getElementById('shopList');
+  const searchInput = document.getElementById('shopSearch');
+  const limitSelect = document.getElementById('shopLimit');
+
+  function renderShopList() {
+    const keyword = searchInput.value.trim().toLowerCase();
+    const limit = parseInt(limitSelect.value, 10);
+    let filtered = allShopLis.filter(li => {
+      const name = li.getAttribute('data-name').toLowerCase();
+      const slug = li.getAttribute('data-slug').toLowerCase();
+      const owner = li.getAttribute('data-owner').toLowerCase();
+      const email = li.getAttribute('data-email').toLowerCase();
+      return (
+        name.includes(keyword) ||
+        slug.includes(keyword) ||
+        owner.includes(keyword) ||
+        email.includes(keyword)
+      );
+    });
+    // Hiển thị tối đa limit kết quả
+    filtered = filtered.slice(0, limit);
+
+    shopListUl.innerHTML = '';
+    if (filtered.length === 0) {
+      shopListUl.innerHTML = '<li>Không tìm thấy shop phù hợp.</li>';
+    } else {
+      filtered.forEach(li => shopListUl.appendChild(li));
+    }
+  }
+
+  searchInput.addEventListener('input', renderShopList);
+  limitSelect.addEventListener('change', renderShopList);
+
+  // Khởi tạo mặc định
+  renderShopList();
+
+  // Đóng modal khi click nền tối
+  window.onclick = function(event) {
+    if (event.target === document.getElementById('editModal')) closeEditModal();
+    if (event.target === document.getElementById('deleteModal')) closeDeleteModal();
+  }
+
+  // Tự động tạo slug khi nhập tên shop
+  document.getElementById('name').addEventListener('input', function() {
+    const value = this.value
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // bỏ dấu tiếng Việt
+      .replace(/[^a-z0-9\s-]/g, '') // bỏ ký tự đặc biệt
+      .replace(/\s+/g, '-')         // thay khoảng trắng bằng -
+      .replace(/-+/g, '-')          // bỏ trùng dấu -
+      .replace(/^-+|-+$/g, '');     // bỏ - ở đầu/cuối
+    document.getElementById('slug').value = value;
+  });
+</script>
+
+<%- include('../partials/footer') %>

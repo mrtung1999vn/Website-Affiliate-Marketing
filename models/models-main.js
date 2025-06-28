@@ -16,4 +16,6 @@ const Shop = sequelize.define('Shop', {
   dbFile: DataTypes.STRING
 });
 
+sequelize.sync(); // Thêm dòng này để tự động tạo bảng nếu chưa có
+
 module.exports = { sequelize, Shop };
