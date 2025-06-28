@@ -1,0 +1,39 @@
+<%- include('../partials/header') %>
+
+<h2>📦 Quản lý Sản phẩm</h2>
+
+<a href="/shop/<%= slug %>/products/create">➕ Thêm sản phẩm mới</a>
+
+<table border="1" cellpadding="8" cellspacing="0">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Tên sản phẩm</th>
+      <th>Giá gốc</th>
+      <th>Giá affiliate</th>
+      <th>Danh mục</th>
+      <th>Thao tác</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (products.length === 0) { %>
+      <tr><td colspan="6">Chưa có sản phẩm nào.</td></tr>
+    <% } else { %>
+      <% products.forEach((product, i) => { %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><%= product.name %></td>
+          <td><%= product.price %> đ</td>
+          <td><%= product.affiliate_price %> đ</td>
+          <td><%= product.category || 'Không có' %></td>
+          <td>
+            <a href="/shop/<%= slug %>/products/edit/<%= product.id %>">✏️ Sửa</a> |
+            <a href="/shop/<%= slug %>/products/delete/<%= product.id %>" onclick="return confirm('Xóa sản phẩm?')">🗑️ Xoá</a>
+          </td>
+        </tr>
+      <% }) %>
+    <% } %>
+  </tbody>
+</table>
+
+<%- include('../partials/footer') %>

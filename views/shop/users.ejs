@@ -1,0 +1,43 @@
+<%- include('../partials/header') %>
+
+<h2>👥 Quản lý Cộng Tác Viên</h2>
+
+<a href="/shop/<%= slug %>/users/create">➕ Thêm CTV mới</a>
+
+<table border="1" cellpadding="8" cellspacing="0">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Tên</th>
+      <th>SĐT</th>
+      <th>Ngân hàng</th>
+      <th>Số TK</th>
+      <th>Token API</th>
+      <th>Spam?</th>
+      <th>Thao tác</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (users.length === 0) { %>
+      <tr><td colspan="8">Chưa có cộng tác viên nào.</td></tr>
+    <% } else { %>
+      <% users.forEach((user, i) => { %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><%= user.name %></td>
+          <td><%= user.phone %></td>
+          <td><%= user.bank_name %></td>
+          <td><%= user.bank_number %></td>
+          <td><%= user.api_token %></td>
+          <td><%= user.is_spam ? '🟥 Có' : '🟩 Không' %></td>
+          <td>
+            <a href="/shop/<%= slug %>/users/edit/<%= user.id %>">✏️ Sửa</a> |
+            <a href="/shop/<%= slug %>/users/delete/<%= user.id %>" onclick="return confirm('Xoá người dùng này?')">🗑️ Xoá</a>
+          </td>
+        </tr>
+      <% }) %>
+    <% } %>
+  </tbody>
+</table>
+
+<%- include('../partials/footer') %>

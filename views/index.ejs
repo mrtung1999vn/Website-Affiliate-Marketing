@@ -1,0 +1,50 @@
+<!-- filepath: f:\24_tool_thu_thuat\Website-Affiliate-Marketing\views\index.ejs -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Danh sách API</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .api-list { width: 70%; margin: 40px auto; }
+    .api-item { border: 1px solid #ccc; border-radius: 6px; margin-bottom: 18px; padding: 18px; background: #f9f9f9; }
+    .api-method { font-weight: bold; color: #007bff; }
+    .api-path { font-family: monospace; font-size: 1.1em; }
+    .api-desc { margin-top: 8px; color: #333; }
+    .api-detail { display: none; margin-top: 12px; background: #fff; border: 1px solid #eee; padding: 12px; border-radius: 4px; }
+    .show-btn { margin-top: 10px; cursor: pointer; color: #007bff; background: none; border: none; font-size: 1em; }
+    pre { background: #f4f4f4; padding: 8px; border-radius: 4px; }
+  </style>
+  <script>
+    function toggleDetail(idx) {
+      var detail = document.getElementById('api-detail-' + idx);
+      if (detail.style.display === 'block') {
+        detail.style.display = 'none';
+      } else {
+        detail.style.display = 'block';
+      }
+    }
+  </script>
+</head>
+<body>
+  <h2 style="text-align:center;">Danh sách API chi tiết</h2>
+  <div class="api-list">
+    <% apis.forEach((api, idx) => { %>
+      <div class="api-item">
+        <div>
+          <span class="api-method"><%= api.method %></span>
+          <span class="api-path"><%= api.path %></span>
+          <span style="color:#aaa;">(<%= idx %>)</span>
+        </div>
+        <div class="api-desc"><strong>Chức năng:</strong> <%= api.desc %></div>
+        <button class="show-btn" onclick="toggleDetail(<%- idx %>)">Xem chi tiết</button>
+        <div class="api-detail" id="api-detail-<%= idx %>">
+          <div><strong>Ví dụ request:</strong></div>
+          <pre><%= api.exampleRequest %></pre>
+          <div><strong>Ví dụ response:</strong></div>
+          <pre><%= api.exampleResponse %></pre>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<%- include('../partials/header') %>
+
+<h2>🗂️ Danh sách các Shop đã tạo</h2>
+
+<table border="1" cellpadding="8" cellspacing="0">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Tên Shop</th>
+      <th>Slug</th>
+      <th>Chủ shop</th>
+      <th>Email</th>
+      <th>File DB</th>
+      <th>Truy cập</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (shops.length === 0) { %>
+      <tr><td colspan="7">Chưa có shop nào.</td></tr>
+    <% } else { %>
+      <% shops.forEach((shop, i) => { %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><%= shop.name %></td>
+          <td><%= shop.slug %></td>
+          <td><%= shop.owner %></td>
+          <td><%= shop.email %></td>
+          <td><%= shop.dbFile %></td>
+          <td><a href="/shop/<%= shop.slug %>/login" target="_blank">🔗 Truy cập</a></td>
+        </tr>
+      <% }) %>
+    <% } %>
+  </tbody>
+</table>
+
+<%- include('../partials/footer') %>

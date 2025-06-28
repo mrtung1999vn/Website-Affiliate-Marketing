@@ -1,0 +1,53 @@
+<%- include('../partials/header') %>
+
+<h2>📊 Báo cáo doanh thu & hoa hồng</h2>
+
+<form method="GET" action="">
+  <label>Chọn khoảng thời gian:</label>
+  <select name="range">
+    <option value="today">Hôm nay</option>
+    <option value="week">7 ngày qua</option>
+    <option value="month">Tháng này</option>
+    <option value="year">Năm nay</option>
+  </select>
+  <button type="submit">Lọc</button>
+</form>
+
+<hr />
+
+<h3>🧾 Tổng quan</h3>
+<ul>
+  <li>Tổng doanh thu: <strong><%= report.totalRevenue %> đ</strong></li>
+  <li>Tổng đơn hàng: <strong><%= report.totalOrders %></strong></li>
+  <li>Tổng hoa hồng cần trả: <strong><%= report.totalAffiliate %> đ</strong></li>
+</ul>
+
+<h3>🏆 Top cộng tác viên</h3>
+<table border="1" cellpadding="8" cellspacing="0">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Tên CTV</th>
+      <th>SĐT</th>
+      <th>Số đơn giới thiệu</th>
+      <th>Hoa hồng</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (report.topAffiliates.length === 0) { %>
+      <tr><td colspan="5">Chưa có dữ liệu.</td></tr>
+    <% } else { %>
+      <% report.topAffiliates.forEach((user, i) => { %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><%= user.name %></td>
+          <td><%= user.phone %></td>
+          <td><%= user.order_count %></td>
+          <td><%= user.total_commission %> đ</td>
+        </tr>
+      <% }) %>
+    <% } %>
+  </tbody>
+</table>
+
+<%- include('../partials/footer') %>
