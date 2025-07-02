@@ -3,19 +3,40 @@ const session = require('express-session');
 const path = require('path');
 const dotenv = require('dotenv');
 const fs = require('fs');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1); // Nếu chạy sau proxy (Nginx)
 
-// Cấu hình
+app.use(helmet()); // ⚠️ Bảo vệ HTTP header
+
+// Giới hạn request
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 phút
+  max: 100, // Tối đa 100 yêu cầu mỗi IP mỗi 15 phút
+  message: 'Quá nhiều yêu cầu từ IP của bạn, vui lòng thử lại sau.'
+});
+app.use(limiter);
+
+// Cấu hình Express
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
+
+// Cấu hình session bảo mật hơn
 app.use(session({
   secret: process.env.SECRET,
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  }
 }));
 
 // Routes
@@ -37,24 +58,28 @@ app.get('/', (req, res) => {
   res.render('index', { apis });
 });
 
-// Middleware xử lý lỗi toàn cục cho Express
+// Middleware xử lý lỗi toàn cục
 app.use((err, req, res, next) => {
   console.error('Lỗi:', err);
   if (req.xhr || req.headers.accept.indexOf('json') > -1) {
-    res.status(500).json({ success: false, message: 'Có lỗi xảy ra!', error: err.message });
+    res.status(500).json({
+      success: false,
+      message: 'Có lỗi xảy ra!',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   } else {
-    res.status(500).render('error', { error: err });
+    res.status(500).render('error', {
+      error: process.env.NODE_ENV === 'development' ? err : null
+    });
   }
 });
 
-// Xử lý lỗi không bắt được (unhandledRejection & uncaughtException)
+// Bắt lỗi không xử lý
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection:', reason);
-  // Không nên dừng server, chỉ log lỗi
 });
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
-  // Không nên dừng server, chỉ log lỗi
 });
 
 const PORT = process.env.PORT || 3000;
