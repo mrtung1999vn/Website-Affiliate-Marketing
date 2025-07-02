@@ -13,5 +13,11 @@ router.post('/:slug/users/edit/:id', shopController.editUser);
 router.get('/:slug/products', shopController.getProducts);
 router.get('/:slug/orders', shopController.getOrders);
 router.get('/:slug/reports', shopController.getReports);
+router.get('/:slug/tables', shopController.viewTable);
+router.get('/:slug/tables/create', shopController.showCreateTable);
+router.post('/:slug/tables/create', shopController.createTable);
+router.get('/:slug/tables/:id/edit', shopController.showEditTable);
+router.post('/:slug/tables/:id/edit', shopController.editTable);
+router.post('/:slug/tables/:id/delete', shopController.deleteTable);
 
 module.exports = router;

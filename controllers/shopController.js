@@ -1,6 +1,8 @@
 // controllers/shopController.js
 const { loadShopDB } = require('../models');
 const { Shop } = require('../models/models-main');
+const { getShopDB } = require('../utils/db-loader');
+const TableModel = require('../models/Table');
 
 // Middleware kiểm tra đăng nhập shop
 function requireShopLogin(req, res, next) {
@@ -182,4 +184,76 @@ exports.logout = (req, res) => {
   req.session.destroy(() => {
     res.redirect(`/shop/${req.params.slug}/login`);
   });
+};
+
+// Hiển thị danh sách Table
+exports.listTables = async (req, res) => {
+  const { slug } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  const tables = await Table.findAll();
+  res.render('shop/tables/list', { slug, tables });
+};
+
+// Hiển thị form tạo Table
+exports.showCreateTable = (req, res) => {
+  res.render('shop/tables/create', { slug: req.params.slug });
+};
+
+// Xử lý tạo Table
+exports.createTable = async (req, res) => {
+  const { slug } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  await Table.create({
+    name: req.body.name,
+    description: req.body.description,
+    shopSlug: slug
+  });
+  res.json({ success: true });
+};
+
+// Hiển thị form sửa Table
+exports.showEditTable = async (req, res) => {
+  const { slug, id } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  const table = await Table.findByPk(id);
+  res.render('shop/tables/edit', { slug, table });
+};
+
+// Xử lý sửa Table
+exports.editTable = async (req, res) => {
+  const { slug, id } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  await Table.update(
+    { name: req.body.name, description: req.body.description },
+    { where: { id } }
+  );
+  res.json({ success: true });
+};
+
+// Xử lý xóa Table
+exports.deleteTable = async (req, res) => {
+  const { slug, id } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  await Table.destroy({ where: { id } });
+  res.json({ success: true });
+};
+
+// Hiển thị danh sách Table (viewTable)
+exports.viewTable = async (req, res) => {
+  const { slug } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  await Table.sync();
+  const tables = await Table.findAll();
+
+  // Lấy tên shop từ DB chính
+  const shop = await Shop.findOne({ where: { slug } });
+  const shopName = shop ? shop.name : slug;
+
+  res.render('shop/tables/viewTable', { slug, tables, shopName });
 };

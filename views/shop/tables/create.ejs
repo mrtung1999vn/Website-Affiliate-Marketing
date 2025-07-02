@@ -1,0 +1,32 @@
+<form id="createTableForm" method="POST" action="/shop/<%= slug %>/tables/create" style="max-width:340px;margin:0 auto;">
+  <h2 style="margin-bottom:18px;">Thêm Table mới</h2>
+  <div style="margin-bottom:14px;">
+    <label for="name" style="display:block;font-weight:500;margin-bottom:4px;">Tên Table</label>
+    <input id="name" name="name" type="text" required style="width:100%;padding:8px 10px;border-radius:7px;border:1.2px solid #e0e0e0;" />
+  </div>
+  <div style="margin-bottom:18px;">
+    <label for="description" style="display:block;font-weight:500;margin-bottom:4px;">Mô tả</label>
+    <textarea id="description" name="description" rows="3" style="width:100%;padding:8px 10px;border-radius:7px;border:1.2px solid #e0e0e0;"></textarea>
+  </div>
+  <button type="submit" style="width:100%;padding:11px;background:linear-gradient(90deg,#007bff 60%,#00c6ff 100%);color:#fff;border:none;border-radius:8px;font-size:1.1em;font-weight:bold;cursor:pointer;">Thêm Table</button>
+</form>
+<script>
+// Gửi form bằng AJAX để dùng với modal (nếu cần)
+const form = document.getElementById('createTableForm');
+if(form) {
+  form.onsubmit = async function(e) {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const res = await fetch(form.action, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.parent.location.reload();
+    } else {
+      alert('Có lỗi khi thêm Table!');
+    }
+  }
+}
+</script>

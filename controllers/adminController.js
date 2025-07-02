@@ -2,6 +2,8 @@ const { Shop } = require('../models/models-main');
 const { loadShopDB } = require('../models');
 const multer = require('multer');
 const path = require('path');
+const { getShopDB } = require('../utils/db-loader'); // Hàm lấy Sequelize instance theo slug
+const TableModel = require('../models/Table');
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -78,6 +80,7 @@ exports.createShop = [
         logo: logoPath,
         dbFile: ''
       });
+
       // Tạo user admin cho shop (DB riêng)
       const { loadShopDB } = require('../models');
       const shopDB = loadShopDB(req.body.slug);
@@ -91,6 +94,20 @@ exports.createShop = [
         username: req.body.adminUsername,
         password: req.body.adminPassword
       });
+
+      // === Tạo bảng Tables và thêm 20 bàn mặc định ===
+      const { getShopDB } = require('../utils/db-loader');
+      const TableModel = require('../models/Table');
+      const db = getShopDB(req.body.slug);
+      const Table = TableModel(db);
+      await Table.sync();
+      const tables = [];
+      for (let i = 1; i <= 20; i++) {
+        tables.push({ name: `Bàn ${i}`, description: `Bàn số ${i}`, shopSlug: req.body.slug });
+      }
+      await Table.bulkCreate(tables);
+      // ==============================================
+
       const shops = await Shop.findAll({ order: [['id', 'DESC']] });
       res.render('admin/createShop', { success: 'Tạo shop mới thành công!', shops });
     } catch (err) {
@@ -179,4 +196,71 @@ exports.deleteShop = async (req, res) => {
     const shops = await Shop.findAll({ order: [['id', 'DESC']] });
     res.render('admin/createShop', { error: 'Có lỗi khi xoá shop!', shops });
   }
+};
+
+// Hiển thị danh sách Table
+exports.listTables = async (req, res) => {
+  const { slug } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  const tables = await Table.findAll();
+  res.render('admin/tables/list', { slug, tables });
+};
+
+// Hiển thị form tạo Table
+exports.showCreateTable = (req, res) => {
+  res.render('admin/tables/create', { slug: req.params.slug });
+};
+
+// Xử lý tạo Table
+exports.createTable = async (req, res) => {
+  const { slug } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  await Table.create({
+    name: req.body.name,
+    description: req.body.description,
+    shopSlug: slug
+  });
+  res.json({ success: true });
+};
+
+// Hiển thị form sửa Table
+exports.showEditTable = async (req, res) => {
+  const { slug, id } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  const table = await Table.findByPk(id);
+  res.render('admin/tables/edit', { slug, table });
+};
+
+// Xử lý sửa Table
+exports.editTable = async (req, res) => {
+  const { slug, id } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  await Table.update(
+    { name: req.body.name, description: req.body.description },
+    { where: { id } }
+  );
+  res.json({ success: true });
+};
+
+// Xử lý xóa Table
+exports.deleteTable = async (req, res) => {
+  const { slug, id } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  await Table.destroy({ where: { id } });
+  res.json({ success: true });
+};
+
+exports.viewTable = async (req, res) => {
+  const { slug } = req.params;
+  const db = getShopDB(slug);
+  const Table = TableModel(db);
+  const tables = await Table.findAll();
+  // Nếu muốn lấy tên shop:
+  const shopName = slug; // hoặc lấy từ DB nếu cần
+  res.render('admin/tables/viewTable', { slug, shopName, tables });
 };

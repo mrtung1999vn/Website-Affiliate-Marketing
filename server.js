@@ -37,6 +37,26 @@ app.get('/', (req, res) => {
   res.render('index', { apis });
 });
 
+// Middleware xử lý lỗi toàn cục cho Express
+app.use((err, req, res, next) => {
+  console.error('Lỗi:', err);
+  if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+    res.status(500).json({ success: false, message: 'Có lỗi xảy ra!', error: err.message });
+  } else {
+    res.status(500).render('error', { error: err });
+  }
+});
+
+// Xử lý lỗi không bắt được (unhandledRejection & uncaughtException)
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection:', reason);
+  // Không nên dừng server, chỉ log lỗi
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  // Không nên dừng server, chỉ log lỗi
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅ Server chạy tại http://localhost:${PORT}`);

@@ -1,0 +1,11 @@
+<%- include('partials/header') %>
+<div style="max-width:600px;margin:40px auto;padding:32px;background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+  <h2 style="color:#dc3545;">Đã xảy ra lỗi!</h2>
+  <div style="margin:18px 0;color:#333;">
+    <%= error && error.message ? error.message : 'Lỗi không xác định.' %>
+  </div>
+  <% if (error && error.stack) { %>
+    <pre style="background:#f8f8f8;padding:12px;border-radius:8px;color:#555;"><%= error.stack %></pre>
+  <% } %>
+</div>
+<%- include('partials/footer') %>

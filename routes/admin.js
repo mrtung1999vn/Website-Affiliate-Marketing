@@ -30,4 +30,12 @@ router.get('/shops', adminController.listShops);
 router.post('/shops/edit/:id', upload.single('logo'), adminController.editShop);
 router.post('/shops/delete/:id', adminController.deleteShop);
 
+// Hiển thị danh sách Table của shop (viewTable)
+router.get('/shops/:slug/tables', adminController.viewTable);
+router.get('/shops/:slug/tables/create', adminController.showCreateTable);
+router.post('/shops/:slug/tables/create', adminController.createTable);
+router.get('/shops/:slug/tables/:id/edit', adminController.showEditTable);
+router.post('/shops/:slug/tables/:id/edit', adminController.editTable);
+router.post('/shops/:slug/tables/:id/delete', adminController.deleteTable);
+
 module.exports = router;
