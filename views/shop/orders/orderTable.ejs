@@ -52,12 +52,41 @@
   }
   tbody tr:hover { background: #f5f7fa; }
   .total-row td { font-weight: bold; color: #28a745; }
+  .action-btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.action-btn.add {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.action-btn.pay {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.action-btn:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+input, select {
+  font-size: 14px;
+  height: 38px;
+}
 </style>
 
 <div class="dashboard-container">
   <div class="dashboard-title">Quản lý bàn: <%= table.name %></div>
 
-  <!-- Bộ lọc sản phẩm -->
+  <!-- Filter -->
   <div class="product-filter-bar">
     <input type="text" id="searchInput" placeholder="Tìm kiếm sản phẩm..." oninput="filterProducts()">
     <select id="categoryFilter" onchange="filterProducts()">
@@ -75,7 +104,7 @@
     </select>
   </div>
 
-  <!-- Grid sản phẩm -->
+  <!-- Grid -->
   <div class="product-grid" id="productGrid">
     <% products.forEach(function(product) { %>
       <div class="product-card" data-name="<%= product.name %>" data-category="<%= product.categoryId %>" data-price="<%= product.price %>">
@@ -87,6 +116,7 @@
     <% }) %>
   </div>
 
+  <!-- Danh sách món -->
   <h3 style="margin-bottom:12px;">Danh sách món đã chọn:</h3>
   <div style="overflow-x:auto;">
     <table>
@@ -99,7 +129,7 @@
           <th>Thành tiền</th>
         </tr>
       </thead>
-      <tbody id="orderItemsBody">
+      <tbody>
         <% itemsDetail.forEach(function(item) { %>
           <tr>
             <td><%= item.productId %></td>
@@ -116,6 +146,11 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Nút thanh toán -->
+  <form action="/shop/<%= slug %>/tables/<%= table.id %>/order/pay" method="POST" style="margin-top:24px;text-align:right;">
+    <button type="submit" class="action-btn pay" style="font-size:16px;">Thanh toán</button>
+  </form>
 </div>
 
 <script>
@@ -143,8 +178,11 @@ function filterProducts() {
     cards.forEach(card => grid.appendChild(card));
   }
 }
+function selectProduct(id) {
+  document.querySelector('select[name="productId"]').value = id;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-// Tự động thêm sản phẩm vào hóa đơn khi chọn
 function addToOrder(productId) {
   fetch(`/shop/<%= slug %>/tables/<%= table.id %>/order/add`, {
     method: 'POST',
@@ -152,6 +190,7 @@ function addToOrder(productId) {
     body: JSON.stringify({ productId, quantity: 1 })
   }).then(() => location.reload());
 }
+
 </script>
 
 <%- include('../../partials/footer') %>

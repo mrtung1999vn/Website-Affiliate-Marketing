@@ -33,4 +33,8 @@ router.post('/:slug/products/create', shopController.createProduct);
 router.post('/:slug/products/:id/edit', shopController.editProduct);
 router.post('/:slug/products/:id/delete', shopController.deleteProduct);
 
+router.get('/:slug/tables/:id/order', shopController.openOrderForTable);
+router.post('/:slug/tables/:id/order/add', shopController.addProductToOrder);
+router.post('/:slug/tables/:id/order/pay', shopController.payOrder);
+
 module.exports = router;

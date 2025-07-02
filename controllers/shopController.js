@@ -66,7 +66,7 @@ exports.dashboard = [requireShopLogin, async (req, res) => {
     try {
       const orders = await Order.findAll({ attributes: ['total'] });
       totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
-    } catch (e) {}
+    } catch (e) { }
     res.render('shop/dashboard', {
       totalUsers,
       totalProducts,
@@ -392,3 +392,91 @@ exports.deleteProduct = async (req, res) => {
   await Product.destroy({ where: { id, shopSlug: slug } });
   res.redirect(`/shop/${slug}/products`);
 };
+
+// Mở order cho bàn
+exports.openOrderForTable = async (req, res) => {
+  const { slug, id } = req.params;
+  const db = getShopDB(slug);
+  const Table = require('../models/Table')(db);
+  const Product = require('../models/Product')(db);
+  const Category = require('../models/Category')(db);
+  const Order = require('../models/Order')(db);
+  const OrderItem = require('../models/OrderItem')(db);
+
+  // Đảm bảo các bảng đã tồn tại
+  await db.sync({ alter: true });
+
+  // Tìm order "open" cho bàn này, nếu chưa có thì tạo mới
+  let order = await Order.findOne({ where: { tableId: id, status: 'open' } });
+  if (!order) {
+    order = await Order.create({ tableId: id, status: 'open', shopSlug: slug });
+    await Table.update({ status: 'occupied' }, { where: { id } });
+  }
+
+  const table = await Table.findByPk(id);
+  const products = await Product.findAll({ where: { shopSlug: slug } });
+  const categories = await Category.findAll({ where: { shopSlug: slug } });
+  const orderItems = await OrderItem.findAll({ where: { orderId: order.id } });
+
+  // Lấy thông tin sản phẩm cho từng orderItem
+  const itemsDetail = await Promise.all(orderItems.map(async (item) => {
+    const product = products.find(p => p.id === item.productId);
+    return {
+      ...item.dataValues,
+      productName: product ? product.name : 'N/A'
+    };
+  }));
+
+  res.render('shop/tables/viewTable', {
+    slug,
+    table,
+    order,
+    products,
+    categories,
+    itemsDetail
+  });
+};
+
+// Thêm sản phẩm vào order
+exports.addProductToOrder = [requireShopLogin, async (req, res) => {
+  const { slug, id } = req.params; // id ở đây là id của bàn
+  const { productId, quantity } = req.body;
+  const shopDB = loadShopDB(slug);
+  const Order = shopDB.define('Order', {}, { tableName: 'Orders', timestamps: false });
+  const OrderDetail = shopDB.define('OrderDetail', {}, { tableName: 'OrderDetails', timestamps: false });
+  await shopDB.sync();
+
+  // Tìm order đang chờ cho bàn này
+  const order = await Order.findOne({ where: { tableId: id, status: 'pending' } });
+  if (!order) {
+    return res.status(404).send('Order không tồn tại');
+  }
+
+  // Thêm sản phẩm vào order
+  await OrderDetail.create({
+    orderId: order.id,
+    productId,
+    quantity
+  });
+
+  res.redirect(`/shop/${slug}/tables/${id}/order`);
+}];
+
+// Thanh toán cho order
+exports.payOrder = [requireShopLogin, async (req, res) => {
+  const { slug, id } = req.params; // id ở đây là id của bàn
+  const shopDB = loadShopDB(slug);
+  const Order = shopDB.define('Order', {}, { tableName: 'Orders', timestamps: false });
+  await shopDB.sync();
+
+  // Tìm order đang chờ cho bàn này
+  const order = await Order.findOne({ where: { tableId: id, status: 'pending' } });
+  if (!order) {
+    return res.status(404).send('Order không tồn tại');
+  }
+
+  // Cập nhật trạng thái order thành đã thanh toán
+  await Order.update({ status: 'paid' }, { where: { id: order.id } });
+
+  res.redirect(`/shop/${slug}/tables/${id}/order`);
+}];
