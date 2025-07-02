@@ -3,6 +3,10 @@ const { loadShopDB } = require('../models');
 const { Shop } = require('../models/models-main');
 const { getShopDB } = require('../utils/db-loader');
 const TableModel = require('../models/Table');
+const CategoryModel = require('../models/Category');
+const ProductModel = require('../models/Product');
+const multer = require('multer');
+const path = require('path');
 
 // Middleware kiểm tra đăng nhập shop
 function requireShopLogin(req, res, next) {
@@ -11,6 +15,9 @@ function requireShopLogin(req, res, next) {
   }
   res.redirect(`/shop/${req.params.slug}/login`);
 }
+
+// Cấu hình multer cho upload ảnh
+const upload = multer({ dest: path.join(__dirname, '../public/uploads') });
 
 exports.loginPage = async (req, res) => {
   const slug = req.params.slug;
@@ -93,7 +100,7 @@ exports.getProducts = [requireShopLogin, async (req, res) => {
   const Product = shopDB.define('Product', {}, { tableName: 'Products', timestamps: false });
   await shopDB.sync();
   const products = await Product.findAll();
-  res.render('shop/products', { products });
+  res.render('shop/products', { products, slug });
 }];
 
 // Orders
@@ -208,9 +215,10 @@ exports.createTable = async (req, res) => {
   await Table.create({
     name: req.body.name,
     description: req.body.description,
+    status: req.body.status, // thêm status
     shopSlug: slug
   });
-  res.json({ success: true });
+  res.redirect(`/shop/${slug}/tables`); // redirect thay vì trả về JSON
 };
 
 // Hiển thị form sửa Table
@@ -228,10 +236,14 @@ exports.editTable = async (req, res) => {
   const db = getShopDB(slug);
   const Table = TableModel(db);
   await Table.update(
-    { name: req.body.name, description: req.body.description },
+    {
+      name: req.body.name,
+      description: req.body.description,
+      status: req.body.status // thêm status
+    },
     { where: { id } }
   );
-  res.json({ success: true });
+  res.redirect(`/shop/${slug}/tables`); // redirect thay vì trả về JSON
 };
 
 // Xử lý xóa Table
@@ -240,7 +252,7 @@ exports.deleteTable = async (req, res) => {
   const db = getShopDB(slug);
   const Table = TableModel(db);
   await Table.destroy({ where: { id } });
-  res.json({ success: true });
+  res.redirect(`/shop/${slug}/tables`); // redirect thay vì trả về JSON
 };
 
 // Hiển thị danh sách Table (viewTable)
@@ -256,4 +268,127 @@ exports.viewTable = async (req, res) => {
   const shopName = shop ? shop.name : slug;
 
   res.render('shop/tables/viewTable', { slug, tables, shopName });
+};
+
+// Hiển thị danh sách danh mục
+exports.viewCategories = async (req, res) => {
+  const { slug } = req.params;
+  const db = getShopDB(slug);
+  const Category = CategoryModel(db);
+  await db.sync();
+  const categories = await Category.findAll({ where: { shopSlug: slug } });
+  res.render('shop/categories/viewCategories', { slug, categories });
+};
+
+// Hiển thị modal thêm danh mục (nếu dùng modal thì không cần route riêng, chỉ cần form trong viewCategories)
+exports.createCategory = async (req, res) => {
+  const { slug } = req.params;
+  const db = getShopDB(slug);
+  const Category = CategoryModel(db);
+  await db.sync();
+  await Category.create({
+    name: req.body.name,
+    description: req.body.description,
+    shopSlug: slug
+  });
+  res.redirect(`/shop/${slug}/categories`);
+};
+
+exports.editCategory = async (req, res) => {
+  const { slug, id } = req.params;
+  const db = getShopDB(slug);
+  const Category = CategoryModel(db);
+  await db.sync();
+  await Category.update(
+    { name: req.body.name, description: req.body.description },
+    { where: { id, shopSlug: slug } }
+  );
+  res.redirect(`/shop/${slug}/categories`);
+};
+
+exports.deleteCategory = async (req, res) => {
+  const { slug, id } = req.params;
+  const db = getShopDB(slug);
+  const Category = CategoryModel(db);
+  await db.sync();
+  await Category.destroy({ where: { id, shopSlug: slug } });
+  res.redirect(`/shop/${slug}/categories`);
+};
+
+// Hiển thị danh sách sản phẩm
+exports.viewProducts = async (req, res) => {
+  const slug = req.params.slug;
+  const db = getShopDB(slug);
+  const Product = require('../models/Product')(db);
+  const Category = require('../models/Category')(db);
+
+  // Sửa dòng này:
+  await db.sync({ alter: true }); // Tự động cập nhật bảng nếu thiếu cột
+
+  const products = await Product.findAll({ where: { shopSlug: slug } });
+  const categories = await Category.findAll({ where: { shopSlug: slug } });
+
+  res.render('shop/products/viewProducts', {
+    products,
+    categories,
+    slug
+  });
+};
+
+// Thêm sản phẩm
+exports.createProduct = [
+  upload.single('image'),
+  async (req, res) => {
+    const { slug } = req.params;
+    const db = getShopDB(slug);
+    const Product = ProductModel(db);
+    await db.sync();
+    let imagePath = '';
+    if (req.file) {
+      imagePath = '/uploads/' + req.file.filename;
+    }
+    await Product.create({
+      name: req.body.name,
+      categoryId: req.body.categoryId,
+      price: req.body.price,
+      quantity: req.body.quantity,
+      attributes: req.body.attributes,
+      image: imagePath,
+      shopSlug: slug
+    });
+    res.redirect(`/shop/${slug}/products`);
+  }
+];
+
+// Sửa sản phẩm
+exports.editProduct = [
+  upload.single('image'),
+  async (req, res) => {
+    const { slug, id } = req.params;
+    const db = getShopDB(slug);
+    const Product = ProductModel(db);
+    await db.sync();
+    let updateData = {
+      name: req.body.name,
+      categoryId: req.body.categoryId,
+      price: req.body.price,
+      quantity: req.body.quantity,
+      attributes: req.body.attributes
+    };
+    if (req.file) {
+      updateData.image = '/uploads/' + req.file.filename;
+    }
+    await Product.update(updateData, { where: { id, shopSlug: slug } });
+    res.redirect(`/shop/${slug}/products`);
+  }
+];
+
+// Xóa sản phẩm
+exports.deleteProduct = async (req, res) => {
+  const { slug, id } = req.params;
+  const db = getShopDB(slug);
+  const Product = ProductModel(db);
+  await db.sync();
+  await Product.destroy({ where: { id, shopSlug: slug } });
+  res.redirect(`/shop/${slug}/products`);
 };

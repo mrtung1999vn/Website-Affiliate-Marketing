@@ -1,30 +1,71 @@
 <%- include('../../partials/header') %>
 
 <style>
-body {
-  color: #fff;
-}
-.dashboard-title, .dashboard-container, table, th, td {
-  color: #fff !important;
-}
-.dashboard-container {
-  background: rgba(0,0,0,0.10);
-}
-table {
-  background: transparent !important;
-}
-th {
-  background: rgba(255,255,255,0.08) !important;
-}
-a, a:visited {
-  color: #fff !important;
-}
+  .dashboard-container {
+    max-width: 900px;
+    margin: 40px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 32px 20px 24px 20px;
+    min-height: 340px;
+    color: #2d3a4b;
+  }
+  .dashboard-title {
+    text-align: center;
+    color: #2d3a4b;
+    font-size: 2em;
+    margin-bottom: 32px;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .dashboard-actions {
+    margin-bottom: 24px;
+    text-align: right;
+  }
+  .action-btn {
+    display: inline-block; padding: 7px 16px; border-radius: 6px; font-weight: 500;
+    text-decoration: none; margin-right: 8px; transition: opacity 0.2s;
+    border: none; cursor: pointer;
+  }
+  .action-btn.add { background: #28a745; color: #fff !important; }
+  .action-btn.edit { background: #ffc107; color: #212529 !important; }
+  .action-btn.delete { background: #dc3545; color: #fff !important; }
+  .action-btn:hover { opacity: 0.85; }
+  table { width: 100%; border-collapse: collapse; background: transparent; }
+  th, td { 
+    padding: 10px 8px; 
+    border: 2px solid #bdbdbd; /* Đậm hơn */
+    text-align: left; 
+    background: #fff;
+  }
+  th { 
+    background: #f0f2f5 !important; /* Đậm hơn, sáng hơn */
+    font-weight: 600;
+    color: #222;
+  }
+  /* Modal style */
+  .modal-backdrop {
+    position: fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1000; display:none;
+  }
+  .modal {
+    position: fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    background:#fff; color:#2d3a4b; padding:24px 28px; border-radius:8px; min-width:340px; z-index:1001; display:none;
+    box-shadow:0 8px 32px rgba(0,0,0,0.18);
+  }
+  .modal-header { font-size:18px; font-weight:600; margin-bottom:16px; }
+  .modal-actions { margin-top:18px; text-align:right; }
+  .modal label { display:block; font-weight:500; margin-bottom:4px; }
+  .modal input, .modal textarea {
+    width:100%; padding:7px 10px; border-radius:4px; border:1px solid #bbb; margin-bottom:12px; background:#f7f7f7; color:#2d3a4b;
+  }
+  .modal button { margin-left:8px; }
 </style>
 
 <div class="dashboard-container">
   <div class="dashboard-title">Quản lý Table của Shop: <%= shopName || slug %></div>
   <div class="dashboard-actions" style="margin-bottom:24px;">
-    <a href="/<%= slug %>/tables/create">+ Thêm Table mới</a>
+    <button class="action-btn add" onclick="openAddModal()">+ Thêm Table mới</button>
   </div>
   <div style="overflow-x:auto;">
     <table style="width:100%;border-collapse:collapse;background:#fff;">
@@ -33,31 +74,132 @@ a, a:visited {
           <th style="padding:10px 8px;border:1px solid #e0e0e0;">#</th>
           <th style="padding:10px 8px;border:1px solid #e0e0e0;">Tên Table</th>
           <th style="padding:10px 8px;border:1px solid #e0e0e0;">Mô tả</th>
+          <th style="padding:10px 8px;border:1px solid #e0e0e0;">Trạng thái</th>
           <th style="padding:10px 8px;border:1px solid #e0e0e0;">Thao tác</th>
         </tr>
       </thead>
       <tbody>
         <% if (tables.length === 0) { %>
-          <tr>
-            <td colspan="4" style="text-align:center;padding:18px;">Chưa có Table nào.</td>
-          </tr>
+        <tr>
+          <td colspan="5" style="text-align:center;padding:18px;">Chưa có Table nào.</td>
+        </tr>
         <% } %>
         <% tables.forEach(function(table, idx) { %>
-          <tr>
-            <td style="padding:10px 8px;border:1px solid #e0e0e0;"><%= idx+1 %></td>
-            <td style="padding:10px 8px;border:1px solid #e0e0e0;"><%= table.name %></td>
-            <td style="padding:10px 8px;border:1px solid #e0e0e0;"><%= table.description %></td>
-            <td style="padding:10px 8px;border:1px solid #e0e0e0;">
-              <a href="/<%= slug %>/tables/<%= table.id %>/edit" style="color:#007bff;margin-right:10px;">Sửa</a>
-              <form action="/<%= slug %>/tables/<%= table.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Xác nhận xóa Table này?');">
-                <button type="submit" style="background:#dc3545;color:#fff;border:none;padding:5px 12px;border-radius:5px;cursor:pointer;">Xóa</button>
-              </form>
-            </td>
-          </tr>
+        <tr>
+          <td style="padding:10px 8px;border:1px solid #e0e0e0;"><%= idx+1 %></td>
+          <td style="padding:10px 8px;border:1px solid #e0e0e0;"><%= table.name %></td>
+          <td style="padding:10px 8px;border:1px solid #e0e0e0;"><%= table.description %></td>
+          <td style="padding:10px 8px;border:1px solid #e0e0e0;">
+            <% if(table.status === 'available') { %>
+            <span class="status-badge status-available">Trống</span>
+            <% } else if(table.status === 'occupied') { %>
+            <span class="status-badge status-occupied">Đang dùng</span>
+            <% } else if(table.status === 'reserved') { %>
+            <span class="status-badge status-reserved">Đã đặt</span>
+            <% } else { %>
+            <span class="status-badge" style="background:#888;">Không rõ</span>
+            <% } %>
+          </td>
+          <td style="padding:10px 8px;border:1px solid #e0e0e0;">
+            <button class="action-btn edit" onclick="openEditModal('<%= table.id %>', `<%= table.name.replace(/`/g, '\\`') %>`, `<%= table.description.replace(/`/g, '\\`') %>`, '<%= table.status %>')">Sửa</button>
+            <button class="action-btn delete" onclick="openDeleteModal('<%= table.id %>', `<%= table.name.replace(/`/g, '\\`') %>`)">Xóa</button>
+            <% if(table.status === 'occupied' || table.status === 'reserved') { %>
+            <a href="/<%= slug %>/tables/<%= table.id %>/transfer" class="action-btn transfer">Chuyển bàn</a>
+            <% } %>
+            <a href="/<%= slug %>/tables/<%= table.id %>/order" class="action-btn order">Thêm món</a>
+          </td>
+        </tr>
         <% }) %>
       </tbody>
     </table>
   </div>
 </div>
+
+<!-- Modal backdrop -->
+<div id="modal-backdrop" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:1000;"></div>
+
+<!-- Add Table Modal -->
+<div id="add-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#222;color:#fff;padding:24px 28px;border-radius:8px;min-width:320px;z-index:1001;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+  <div style="font-size:18px;font-weight:600;margin-bottom:16px;">Thêm Table mới</div>
+  <form id="add-form" action="/shop/<%= slug %>/tables/create" method="POST">
+    <input name="name" placeholder="Tên Table" required style="width:100%;padding:7px 10px;border-radius:4px;border:1px solid #555;margin-bottom:12px;background:#333;color:#fff;">
+    <textarea name="description" placeholder="Mô tả" style="width:100%;padding:7px 10px;border-radius:4px;border:1px solid #555;margin-bottom:12px;background:#333;color:#fff;"></textarea>
+    <select name="status" required style="width:100%;padding:7px 10px;border-radius:4px;border:1px solid #555;margin-bottom:12px;background:#333;color:#fff;">
+      <option value="available">Trống</option>
+      <option value="occupied">Đang dùng</option>
+      <option value="reserved">Đã đặt</option>
+    </select>
+    <div style="margin-top:18px;text-align:right;">
+      <button type="button" onclick="closeModal()">Hủy</button>
+      <button type="submit" class="action-btn add">Thêm</button>
+    </div>
+  </form>
+</div>
+
+<!-- Edit Table Modal -->
+<div id="edit-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#222;color:#fff;padding:24px 28px;border-radius:8px;min-width:320px;z-index:1001;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+  <div style="font-size:18px;font-weight:600;margin-bottom:16px;">Sửa Table</div>
+  <form id="edit-form" method="POST">
+    <input id="edit-name" name="name" placeholder="Tên Table" required style="width:100%;padding:7px 10px;border-radius:4px;border:1px solid #555;margin-bottom:12px;background:#333;color:#fff;">
+    <textarea id="edit-description" name="description" placeholder="Mô tả" style="width:100%;padding:7px 10px;border-radius:4px;border:1px solid #555;margin-bottom:12px;background:#333;color:#fff;"></textarea>
+    <select id="edit-status" name="status" required style="width:100%;padding:7px 10px;border-radius:4px;border:1px solid #555;margin-bottom:12px;background:#333;color:#fff;">
+      <option value="available">Trống</option>
+      <option value="occupied">Đang dùng</option>
+      <option value="reserved">Đã đặt</option>
+    </select>
+    <div style="margin-top:18px;text-align:right;">
+      <button type="button" onclick="closeModal()">Hủy</button>
+      <button type="submit" class="action-btn edit">Lưu</button>
+    </div>
+  </form>
+</div>
+
+<!-- Delete Table Modal -->
+<div id="delete-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#222;color:#fff;padding:24px 28px;border-radius:8px;min-width:320px;z-index:1001;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+  <div style="font-size:18px;font-weight:600;margin-bottom:16px;">Xác nhận xóa Table</div>
+  <form id="delete-form" method="POST">
+    <div id="delete-message" style="margin-bottom:16px;"></div>
+    <div style="margin-top:18px;text-align:right;">
+      <button type="button" onclick="closeModal()">Hủy</button>
+      <button type="submit" class="action-btn delete">Xóa</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  function openAddModal() {
+    document.getElementById('modal-backdrop').style.display = 'block';
+    document.getElementById('add-modal').style.display = 'block';
+  }
+
+  function openEditModal(id, name, description, status) {
+    document.getElementById('modal-backdrop').style.display = 'block';
+    document.getElementById('edit-modal').style.display = 'block';
+    document.getElementById('edit-name').value = name;
+    document.getElementById('edit-description').value = description;
+    document.getElementById('edit-status').value = status;
+    document.getElementById('edit-form').action = '/shop/<%= slug %>/tables/' + id + '/edit';
+  }
+
+  function openDeleteModal(id, name) {
+    document.getElementById('modal-backdrop').style.display = 'block';
+    document.getElementById('delete-modal').style.display = 'block';
+    document.getElementById('delete-message').innerText = 'Bạn có chắc chắn muốn xóa Table "' + name + '"?';
+    document.getElementById('delete-form').action = '/shop/<%= slug %>/tables/' + id + '/delete';
+  }
+
+  function closeModal() {
+    document.getElementById('modal-backdrop').style.display = 'none';
+    document.getElementById('add-modal').style.display = 'none';
+    document.getElementById('edit-modal').style.display = 'none';
+    document.getElementById('delete-modal').style.display = 'none';
+  }
+
+  // Đảm bảo DOM đã load mới gán sự kiện
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('modal-backdrop').onclick = closeModal;
+  });
+</script>
+
 
 <%- include('../../partials/footer') %>

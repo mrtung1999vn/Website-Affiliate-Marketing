@@ -1,0 +1,174 @@
+<%- include('../../partials/header') %>
+<style>
+  .dashboard-container {
+    max-width: 900px;
+    margin: 40px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 32px 20px 24px 20px;
+    min-height: 340px;
+    color: #2d3a4b;
+  }
+  .dashboard-title {
+    text-align: center;
+    color: #2d3a4b;
+    font-size: 2em;
+    margin-bottom: 32px;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .dashboard-actions {
+    margin-bottom: 24px;
+    text-align: right;
+  }
+  .action-btn {
+    display: inline-block; padding: 7px 16px; border-radius: 6px; font-weight: 500;
+    text-decoration: none; margin-right: 8px; transition: opacity 0.2s;
+    border: none; cursor: pointer;
+  }
+  .action-btn.add { background: #28a745; color: #fff !important; }
+  .action-btn.edit { background: #ffc107; color: #212529 !important; }
+  .action-btn.delete { background: #dc3545; color: #fff !important; }
+  .action-btn:hover { opacity: 0.85; }
+  table { width: 100%; border-collapse: collapse; background: transparent; }
+  th, td { 
+    padding: 10px 8px; 
+    border: 2px solid #bdbdbd; /* Đậm hơn */
+    text-align: left; 
+    background: #fff;
+  }
+  th { 
+    background: #f0f2f5 !important; /* Đậm hơn, sáng hơn */
+    font-weight: 600;
+    color: #222;
+  }
+  /* Modal style */
+  .modal-backdrop {
+    position: fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1000; display:none;
+  }
+  .modal {
+    position: fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    background:#fff; color:#2d3a4b; padding:24px 28px; border-radius:8px; min-width:340px; z-index:1001; display:none;
+    box-shadow:0 8px 32px rgba(0,0,0,0.18);
+  }
+  .modal-header { font-size:18px; font-weight:600; margin-bottom:16px; }
+  .modal-actions { margin-top:18px; text-align:right; }
+  .modal label { display:block; font-weight:500; margin-bottom:4px; }
+  .modal input, .modal textarea {
+    width:100%; padding:7px 10px; border-radius:4px; border:1px solid #bbb; margin-bottom:12px; background:#f7f7f7; color:#2d3a4b;
+  }
+  .modal button { margin-left:8px; }
+</style>
+
+<div class="dashboard-container">
+  <div class="dashboard-title">Quản lý Danh mục sản phẩm</div>
+  <div class="dashboard-actions">
+    <button class="action-btn add" onclick="openAddModal()">+ Thêm danh mục</button>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Tên danh mục</th>
+          <th>Mô tả</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (categories.length === 0) { %>
+        <tr>
+          <td colspan="4" style="text-align:center;padding:18px;">Chưa có danh mục nào.</td>
+        </tr>
+        <% } %>
+        <% categories.forEach(function(category, idx) { %>
+        <tr>
+          <td><%= idx+1 %></td>
+          <td><%= category.name %></td>
+          <td><%= category.description %></td>
+          <td>
+            <button class="action-btn edit" onclick="openEditModal('<%= category.id %>', `<%= category.name.replace(/`/g, '\\`') %>`, `<%= category.description.replace(/`/g, '\\`') %>`)">✏️ Sửa</button>
+            <button class="action-btn delete" onclick="openDeleteModal('<%= category.id %>', `<%= category.name.replace(/`/g, '\\`') %>`)">🗑️ Xóa</button>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal backdrop -->
+<div id="modal-backdrop" class="modal-backdrop"></div>
+
+<!-- Add Category Modal -->
+<div id="add-modal" class="modal">
+  <div class="modal-header">Thêm danh mục</div>
+  <form id="add-form" action="/shop/<%= slug %>/categories/create" method="POST">
+    <label for="add-name">Tên danh mục</label>
+    <input id="add-name" name="name" placeholder="Tên danh mục" required>
+    <label for="add-description">Mô tả</label>
+    <textarea id="add-description" name="description" placeholder="Mô tả"></textarea>
+    <div class="modal-actions">
+      <button type="button" onclick="closeModal()">Hủy</button>
+      <button type="submit" class="action-btn add">Thêm</button>
+    </div>
+  </form>
+</div>
+
+<!-- Edit Category Modal -->
+<div id="edit-modal" class="modal">
+  <div class="modal-header">Sửa danh mục</div>
+  <form id="edit-form" method="POST">
+    <label for="edit-name">Tên danh mục</label>
+    <input id="edit-name" name="name" placeholder="Tên danh mục" required>
+    <label for="edit-description">Mô tả</label>
+    <textarea id="edit-description" name="description" placeholder="Mô tả"></textarea>
+    <div class="modal-actions">
+      <button type="button" onclick="closeModal()">Hủy</button>
+      <button type="submit" class="action-btn edit">Lưu</button>
+    </div>
+  </form>
+</div>
+
+<!-- Delete Category Modal -->
+<div id="delete-modal" class="modal">
+  <div class="modal-header">Xác nhận xóa danh mục</div>
+  <form id="delete-form" method="POST">
+    <div id="delete-message" style="margin-bottom:16px;"></div>
+    <div class="modal-actions">
+      <button type="button" onclick="closeModal()">Hủy</button>
+      <button type="submit" class="action-btn delete">Xóa</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  function openAddModal() {
+    document.getElementById('modal-backdrop').style.display = 'block';
+    document.getElementById('add-modal').style.display = 'block';
+  }
+  function openEditModal(id, name, description) {
+    document.getElementById('modal-backdrop').style.display = 'block';
+    document.getElementById('edit-modal').style.display = 'block';
+    document.getElementById('edit-name').value = name;
+    document.getElementById('edit-description').value = description;
+    document.getElementById('edit-form').action = '/shop/<%= slug %>/categories/' + id + '/edit';
+  }
+  function openDeleteModal(id, name) {
+    document.getElementById('modal-backdrop').style.display = 'block';
+    document.getElementById('delete-modal').style.display = 'block';
+    document.getElementById('delete-message').innerText = 'Bạn có chắc chắn muốn xóa danh mục "' + name + '"?';
+    document.getElementById('delete-form').action = '/shop/<%= slug %>/categories/' + id + '/delete';
+  }
+  function closeModal() {
+    document.getElementById('modal-backdrop').style.display = 'none';
+    document.getElementById('add-modal').style.display = 'none';
+    document.getElementById('edit-modal').style.display = 'none';
+    document.getElementById('delete-modal').style.display = 'none';
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('modal-backdrop').onclick = closeModal;
+  });
+</script>
+<%- include('../../partials/footer') %>
